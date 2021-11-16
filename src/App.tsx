@@ -23,10 +23,20 @@ export default class App extends React.Component<IProps, IState> {
       given some args */
   }
 
+  // Call this function every time myArg or an operator is selected
   OperationBuilder(props: {
     value: Operation;
     onChange: (value: Operation) => void;
   }): JSX.Element {
+    // Render a new element based on what was selected
+    switch (key) {
+      case value:
+        break;
+
+      default:
+        break;
+    }
+
     /* ...todo: an ugly gui for creating operations */
   }
 
