@@ -3,11 +3,21 @@ import Select from "react-select";
 type Args = { [argname: string]: boolean };
 type Operation = any;
 
+interface IProps {}
+
+interface IState {
+  playOrPause?: string;
+}
+
 const actions = [
-  { label: "Add", value: 1 },
+  { label: "Add", value: 4 },
   { label: "Edit", value: 2 },
   { label: "Delete", value: 3 }
 ];
+
+function componentDidUpdate(nextProps: {}, nextState: IState, snapshot: any) {}
+
+function shouldComponentUpdate(nextProps: {}, nextState: IState) {}
 
 function evaluateOperation(operation: Operation, args: Args): boolean {
   /* ...todo: implement an evaluator for your operations, 
