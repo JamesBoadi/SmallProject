@@ -3,7 +3,7 @@ import Select, { ActionMeta } from "react-select";
 
 type Args = { [argname: string]: boolean };
 type Operation = any;
-type OptionType = { label: string;  value: string; };
+type OptionType = { label: string; value: string };
 
 interface IProps {}
 
@@ -23,6 +23,12 @@ const booleanValues = [
   { label: "False", value: false }
 ];
 
+const customStyles = {
+  control: () => ({
+    width: 250
+  })
+};
+
 export default class App extends React.Component<IProps, IState> {
   constructor(props: IProps) {
     super(props);
@@ -39,11 +45,11 @@ export default class App extends React.Component<IProps, IState> {
 
   ev(event: React.MouseEvent<HTMLButtonElement>) {}
 
-  setSelectedValue(  
+  setSelectedValue(
     value: ReadonlyArray<OptionType>,
-    meta: ActionMeta<OptionType>) {
-
-   console.log(value);
+    meta: ActionMeta<OptionType>
+  ) {
+    console.log(value);
     //this.setState({ operation: event.target.value });
   }
 
@@ -74,10 +80,18 @@ export default class App extends React.Component<IProps, IState> {
       <div>
         {/* todo: use <OperationBuilder> and have an interface
             for entering arguments and seeing the result */}
-        <Select options={actions}  onChange={this.setSelectedValue} />
-        <Select options={booleanValues} style={{"display": flexbox}} />
+
+        <div style={{ width: "15ex", height: "10px", position: "relative", float: "left" }}>
+          <Select options={actions} onChange={this.setSelectedValue} />
+        </div>
+        
+        <div style={{ width: "15ex", height: "10px", display: "inline-block" }}>
+          <Select options={actions} onChange={this.setSelectedValue} />
+        </div>
+
+
+
       </div>
     );
   }
 }
-
