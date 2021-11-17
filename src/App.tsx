@@ -1,12 +1,15 @@
 import React from "react";
-import Select from "react-select";
+import Select, { ActionMeta } from "react-select";
+
 type Args = { [argname: string]: boolean };
 type Operation = any;
+type OptionType = { label: string;  value: string; };
 
 interface IProps {}
 
 interface IState {
   count: number;
+  operation: string;
 }
 
 const actions = [
@@ -15,7 +18,18 @@ const actions = [
   { label: "Delete", value: 3 }
 ];
 
+const booleanValues = [
+  { label: "True", value: true },
+  { label: "False", value: false }
+];
+
 export default class App extends React.Component<IProps, IState> {
+  constructor(props: IProps) {
+    super(props);
+
+    //this.setSelectedValue = this.setSelectedValue.bind(this);
+  }
+
   componentDidUpdate(prevProps: IProps, prevState: IState, snapshot: any) {}
 
   evaluateOperation(operation: Operation, args: Args): boolean {
@@ -23,19 +37,34 @@ export default class App extends React.Component<IProps, IState> {
       given some args */
   }
 
+  ev(event: React.MouseEvent<HTMLButtonElement>) {}
+
+  setSelectedValue(  
+    value: ReadonlyArray<OptionType>,
+    meta: ActionMeta<OptionType>) {
+
+   console.log(value);
+    //this.setState({ operation: event.target.value });
+  }
+
   // Call this function every time myArg or an operator is selected
-  OperationBuilder(props: {
-    value: Operation;
-    onChange: (value: Operation) => void;
-  }): JSX.Element {
+  OperationBuilder(e: any) {
+    console.log(55555555555);
+    /*const val = e.currentTarget.value;
+    
     // Render a new element based on what was selected
-    switch (key) {
-      case value:
+    switch (val) {
+      case 1:
+        console.log(1);
+        break;
+
+      case 2:
+        console.log(2);
         break;
 
       default:
         break;
-    }
+    }*/
 
     /* ...todo: an ugly gui for creating operations */
   }
@@ -45,8 +74,10 @@ export default class App extends React.Component<IProps, IState> {
       <div>
         {/* todo: use <OperationBuilder> and have an interface
             for entering arguments and seeing the result */}
-        <Select options={actions} />
+        <Select options={actions}  onChange={this.setSelectedValue} />
+        <Select options={booleanValues} style={{"display": flexbox}} />
       </div>
     );
   }
 }
+
