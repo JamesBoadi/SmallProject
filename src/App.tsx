@@ -9,7 +9,11 @@ interface IProps {}
 
 interface IState {
   count: number;
-  operation: string;
+  operation: number[];
+}
+
+interface Array<OptionType> {
+  (arg: OptionType ): OptionType;
 }
 
 const actions = [
@@ -46,11 +50,14 @@ export default class App extends React.Component<IProps, IState> {
   ev(event: React.MouseEvent<HTMLButtonElement>) {}
 
   setSelectedValue(
-    value: ReadonlyArray<OptionType>,
+    value: Array<OptionType>,
     meta: ActionMeta<OptionType>
   ) {
-    console.log(value);
-    //this.setState({ operation: event.target.value });
+
+    const val = JSON.parse(JSON.stringify(value));
+    console.log(val.label);
+ //   const val = value.value;
+    this.setState({ operation: val });
   }
 
   // Call this function every time myArg or an operator is selected
@@ -63,11 +70,9 @@ export default class App extends React.Component<IProps, IState> {
       case 1:
         console.log(1);
         break;
-
       case 2:
         console.log(2);
         break;
-
       default:
         break;
     }*/
@@ -81,8 +86,8 @@ export default class App extends React.Component<IProps, IState> {
         {/* todo: use <OperationBuilder> and have an interface
             for entering arguments and seeing the result */}
 
-        <div style={{ width: "15ex", height: "10px", position: "relative", float: "left" }}>
-          <Select options={actions} onChange={this.setSelectedValue} />
+        <div style={{  float: "left", height: "70px" }}>
+          <input type="text" size="5"/>
         </div>
         
         <div style={{ width: "15ex", height: "10px", display: "inline-block" }}>
