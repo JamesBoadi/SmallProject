@@ -57,7 +57,7 @@ export default class App extends React.Component<IProps, IState> {
   }
 
   // Call this function every time myArg or an operator is selected
-  OperationBuilder(key: number): JSX.Element {
+  OperationBuilder(key: number): JSX.Element[] {
     // Render a new element based on what was selected
     switch (val) {
       case 1:
@@ -68,13 +68,15 @@ export default class App extends React.Component<IProps, IState> {
         break;
       default:
         // add arg
-
+        return this.addArgument();
         break;
     }
+
+    return this.addArgument();
   }
 
-  addArgument() {
-    var array = [];
+  addArgument(): JSX.Element[] {
+    var array = []; 
 
     const textfield = (
       <div style={{ float: "left", height: "70" }}>
@@ -102,6 +104,7 @@ export default class App extends React.Component<IProps, IState> {
     );
 
     array.push(textfield, select, button);
+    return array;
   }
 
   render() {
