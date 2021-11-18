@@ -10,10 +10,11 @@ interface IProps {}
 interface IState {
   count: number;
   operation: number[];
+  arguments: string[];
 }
 
 interface Array<OptionType> {
-  (arg: OptionType ): OptionType;
+  (arg: OptionType): OptionType;
 }
 
 const actions = [
@@ -34,11 +35,11 @@ const customStyles = {
 };
 
 export default class App extends React.Component<IProps, IState> {
-  constructor(props: IProps) {
-    super(props);
-
-    //this.setSelectedValue = this.setSelectedValue.bind(this);
-  }
+  state: IState = {
+    count: 0,
+    operation: [],
+    arguments: []
+  };
 
   componentDidUpdate(prevProps: IProps, prevState: IState, snapshot: any) {}
 
@@ -49,22 +50,14 @@ export default class App extends React.Component<IProps, IState> {
 
   ev(event: React.MouseEvent<HTMLButtonElement>) {}
 
-  setSelectedValue(
-    value: Array<OptionType>,
-    meta: ActionMeta<OptionType>
-  ) {
-
+  setSelectedValue(value: Array<OptionType>, meta: ActionMeta<OptionType>) {
     const val = JSON.parse(JSON.stringify(value));
     console.log(val.label);
- //   const val = value.value;
     this.setState({ operation: val });
   }
 
   // Call this function every time myArg or an operator is selected
-  OperationBuilder(e: any) {
-    console.log(55555555555);
-    /*const val = e.currentTarget.value;
-    
+  OperationBuilder(key: number): JSX.Element {
     // Render a new element based on what was selected
     switch (val) {
       case 1:
@@ -74,10 +67,41 @@ export default class App extends React.Component<IProps, IState> {
         console.log(2);
         break;
       default:
-        break;
-    }*/
+        // add arg
 
-    /* ...todo: an ugly gui for creating operations */
+        break;
+    }
+  }
+
+  addArgument() {
+    var array = [];
+
+    const textfield = (
+      <div style={{ float: "left", height: "70" }}>
+        <input type="text" size="5" />
+      </div>
+    );
+
+    const select = (
+      <div style={{ width: "15ex", display: "inline-block" }}>
+        <Select options={actions} onChange={this.setSelectedValue} />
+      </div>
+    );
+
+    const button = (
+      <div style={{ position: "relative" }}>
+        <button
+          type="button"
+          onClick={() => {
+            this.OperationBuilder(0);
+          }}
+        >
+          Add Arg
+        </button>
+      </div>
+    );
+
+    array.push(textfield, select, button);
   }
 
   render() {
@@ -85,17 +109,26 @@ export default class App extends React.Component<IProps, IState> {
       <div>
         {/* todo: use <OperationBuilder> and have an interface
             for entering arguments and seeing the result */}
-
-        <div style={{  float: "left", height: "70px" }}>
-          <input type="text" size="5"/>
+        <div style={{ float: "left", height: "70" }}>
+          <input type="text" size="5" />
         </div>
-        
-        <div style={{ width: "15ex", height: "10px", display: "inline-block" }}>
+
+        <div style={{ width: "15ex", display: "inline-block" }}>
           <Select options={actions} onChange={this.setSelectedValue} />
         </div>
 
+        <div style={{ position: "relative" }}>
+          <button
+            type="button"
+            onClick={() => {
+              this.OperationBuilder(0);
+            }}
+          >
+            Add Arg
+          </button>
+        </div>
 
-
+        {this.state.arguments}
       </div>
     );
   }
