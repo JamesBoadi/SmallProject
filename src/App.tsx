@@ -8,9 +8,11 @@ type OptionType = { label: string; value: string };
 interface IProps {}
 
 interface IState {
+  appendElement: boolean;
   count: number;
   operation: number[];
-  arguments: string[];
+  arguments: JSX.Element[];
+  element: JSX.Element[];
 }
 
 interface Array<OptionType> {
@@ -36,19 +38,36 @@ const customStyles = {
 
 export default class App extends React.Component<IProps, IState> {
   state: IState = {
+    appendElement: false,
     count: 0,
     operation: [],
-    arguments: []
+    arguments: [],
+    element: []
   };
 
-  componentDidUpdate(prevProps: IProps, prevState: IState, snapshot: any) {}
+  componentDidUpdate(prevProps: IProps, prevState: IState, snapshot: any) {
+    if(this.state.appendElement)
+    {
+      var arguments = this.state.arguments;
+
+
+      this.setState({ arguments:  });
+      this.setState({ appendElement: false });
+    }
+
+  }
+
+  shouldComponentUpdate(nextProps: IProps, nextState: IState) {
+    if (this.state.appendElement !== nextState.appendElement) {
+        return true;
+    }
+    return false;
+}
 
   evaluateOperation(operation: Operation, args: Args): boolean {
     /* ...todo: implement an evaluator for your operations, 
       given some args */
   }
-
-  ev(event: React.MouseEvent<HTMLButtonElement>) {}
 
   setSelectedValue(value: Array<OptionType>, meta: ActionMeta<OptionType>) {
     const val = JSON.parse(JSON.stringify(value));
@@ -59,16 +78,12 @@ export default class App extends React.Component<IProps, IState> {
   // Call this function every time myArg or an operator is selected
   OperationBuilder(key: number): JSX.Element[] {
     // Render a new element based on what was selected
-    switch (val) {
+    switch (key) {
       case 1:
         console.log(1);
         break;
       case 2:
         console.log(2);
-        break;
-      default:
-        // add arg
-        return this.addArgument();
         break;
     }
 
@@ -76,7 +91,7 @@ export default class App extends React.Component<IProps, IState> {
   }
 
   addArgument(): JSX.Element[] {
-    var array = []; 
+    var array = [];
 
     const textfield = (
       <div style={{ float: "left", height: "70" }}>
@@ -124,7 +139,16 @@ export default class App extends React.Component<IProps, IState> {
           <button
             type="button"
             onClick={() => {
-              this.OperationBuilder(0);
+              this.setState({ element: this.OperationBuilder(0) });
+
+              this.setState(
+                {
+                  element: this.OperationBuilder(0)
+                },
+                () => {
+                  this.setState({ appendElement: true });
+                }
+              );
             }}
           >
             Add Arg
