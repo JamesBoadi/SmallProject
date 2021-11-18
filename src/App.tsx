@@ -11,7 +11,7 @@ interface IState {
   appendElement: boolean;
   count: number;
   operation: number[];
-  arguments: JSX.Element[];
+  arguments: any[];
   element: JSX.Element[];
 }
 
@@ -30,12 +30,6 @@ const booleanValues = [
   { label: "False", value: false }
 ];
 
-const customStyles = {
-  control: () => ({
-    width: 250
-  })
-};
-
 export default class App extends React.Component<IProps, IState> {
   state: IState = {
     appendElement: false,
@@ -48,12 +42,14 @@ export default class App extends React.Component<IProps, IState> {
   componentDidUpdate(prevProps: IProps, prevState: IState, snapshot: any) {
     if(this.state.appendElement)
     {
-      var arguments = this.state.arguments;
-
-
-      this.setState({ arguments:  });
+      console.log("EVENT TRIGGERED")
+      var arguments_ = this.state.arguments;
+      arguments_.push(this.state.element);
+      this.setState({ arguments: arguments_ });
+      this.forceUpdate();
       this.setState({ appendElement: false });
     }
+   
 
   }
 
@@ -86,7 +82,7 @@ export default class App extends React.Component<IProps, IState> {
         console.log(2);
         break;
     }
-
+    console.log(this.addArgument());
     return this.addArgument();
   }
 
@@ -139,8 +135,6 @@ export default class App extends React.Component<IProps, IState> {
           <button
             type="button"
             onClick={() => {
-              this.setState({ element: this.OperationBuilder(0) });
-
               this.setState(
                 {
                   element: this.OperationBuilder(0)
@@ -155,8 +149,11 @@ export default class App extends React.Component<IProps, IState> {
           </button>
         </div>
 
-        {this.state.arguments}
+        {this.state.arguments[0]}
+        {this.state.arguments[1]}
+        {this.state.arguments[2]}
       </div>
     );
   }
 }
+
