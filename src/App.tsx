@@ -9,10 +9,11 @@ interface IProps {}
 
 interface IState {
   appendElement: boolean;
-  count: number;
   operation: number[];
   arguments: any[];
   element: JSX.Element[];
+  unmountAddArg: boolean;
+  counter: number;
 }
 
 interface Array<OptionType> {
@@ -33,32 +34,28 @@ const booleanValues = [
 export default class App extends React.Component<IProps, IState> {
   state: IState = {
     appendElement: false,
-    count: 0,
     operation: [],
     arguments: [],
-    element: []
+    element: [],
+    unmountAddArg: false,
+    counter: 0
   };
 
   componentDidUpdate(prevProps: IProps, prevState: IState, snapshot: any) {
-    if(this.state.appendElement)
-    {
-      console.log("EVENT TRIGGERED")
+    if (this.state.appendElement) {
       var arguments_ = this.state.arguments;
       arguments_.push(this.state.element);
       this.setState({ arguments: arguments_ });
-      this.forceUpdate();
       this.setState({ appendElement: false });
     }
-   
-
   }
 
   shouldComponentUpdate(nextProps: IProps, nextState: IState) {
     if (this.state.appendElement !== nextState.appendElement) {
-        return true;
+      return true;
     }
     return false;
-}
+  }
 
   evaluateOperation(operation: Operation, args: Args): boolean {
     /* ...todo: implement an evaluator for your operations, 
@@ -102,20 +99,37 @@ export default class App extends React.Component<IProps, IState> {
     );
 
     const button = (
-      <div style={{ position: "relative" }}>
-        <button
-          type="button"
-          onClick={() => {
-            this.OperationBuilder(0);
-          }}
-        >
-          Add Arg
-        </button>
+      <div>
+        {" "}
+        {this.state.unmountAddArg && (
+          <div style={{ position: "relative" }}>
+            <button
+              type="button"
+              onClick={() => {
+                this.setState(
+                  {
+                    element: this.OperationBuilder(0)
+                  },
+                  () => {
+                    this.setState({ appendElement: true });
+                  }
+                );
+              }}
+            >
+              Add Arg
+            </button>
+          </div>
+        )}
       </div>
     );
 
     array.push(textfield, select, button);
     return array;
+  }
+
+  arrayOfArguments() {
+    var arguments_ = this.state.arguments;
+    return arguments_.map((element) => element);
   }
 
   render() {
@@ -140,6 +154,8 @@ export default class App extends React.Component<IProps, IState> {
                   element: this.OperationBuilder(0)
                 },
                 () => {
+                  let counter_ = this.state.counter;
+                  this.setState({ counter: counter_ + 1});
                   this.setState({ appendElement: true });
                 }
               );
@@ -149,9 +165,7 @@ export default class App extends React.Component<IProps, IState> {
           </button>
         </div>
 
-        {this.state.arguments[0]}
-        {this.state.arguments[1]}
-        {this.state.arguments[2]}
+        {this.arrayOfArguments()}
       </div>
     );
   }
