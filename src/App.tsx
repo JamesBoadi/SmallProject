@@ -37,19 +37,26 @@ export default class App extends React.Component<IProps, IState> {
     operation: [],
     arguments: [],
     element: [],
-    unmountAddArg: [],
+    unmountAddArg: [true],
     counter: 0
   };
 
   componentDidUpdate(prevProps: IProps, prevState: IState, snapshot: any) {
     if (this.state.appendElement) {
-      var arguments_ = this.state.arguments;
+      let arguments_ = this.state.arguments;
+      let counter_ = this.state.counter;
       arguments_.push(this.state.element);
 
       var unmountAddArg_ = this.state.unmountAddArg;
-      unmountAddArg_[this.state.counter] = true;
 
-      this.setState({ unmountAddArg: unmountAddArg_ });
+      if(counter_ <= 1)
+        unmountAddArg_[0] = false;
+
+      this.setState({ counter: counter_ + 1});
+   
+
+    
+
       this.setState({ arguments: arguments_ });
       this.setState({ appendElement: false });
     }
@@ -84,13 +91,17 @@ export default class App extends React.Component<IProps, IState> {
         console.log(2);
         break;
     }
-    console.log(this.addArgument());
+    
     return this.addArgument();
   }
 
   addArgument(): JSX.Element[] {
     var array = [];
     const counter_ = this.state.counter;
+
+
+
+    console.log(counter_);
     
     const textfield = (
       <div style={{ float: "left", height: "70" }}>
@@ -105,9 +116,9 @@ export default class App extends React.Component<IProps, IState> {
     );
 
     const button = (
-      <div>
+      <div  style={{ position: "relative"}}>
         {this.state.unmountAddArg[counter_] && (
-          <div style={{ position: "relative" }}>
+          <div>
             <button
               type="button"
               onClick={() => {
@@ -116,8 +127,6 @@ export default class App extends React.Component<IProps, IState> {
                     element: this.OperationBuilder(0)
                   },
                   () => {
-                    let counter_ = this.state.counter;
-                    this.setState({ counter: counter_ + 1});
                     this.setState({ appendElement: true });
                   }
                 );
@@ -130,6 +139,10 @@ export default class App extends React.Component<IProps, IState> {
       </div>
     );
 
+    var unmountAddArg_ = this.state.unmountAddArg;
+    unmountAddArg_[counter_] = false;
+    this.setState({ unmountAddArg: unmountAddArg_ });
+
     array.push(textfield, select, button);
     return array;
   }
@@ -140,6 +153,7 @@ export default class App extends React.Component<IProps, IState> {
   }
 
   render() {
+    const counter_ = 0;
     return (
       <div>
         {/* todo: use <OperationBuilder> and have an interface
@@ -153,6 +167,7 @@ export default class App extends React.Component<IProps, IState> {
         </div>
 
         <div style={{ position: "relative" }}>
+        {this.state.unmountAddArg[counter_] && (
           <button
             type="button"
             onClick={() => {
@@ -161,15 +176,13 @@ export default class App extends React.Component<IProps, IState> {
                   element: this.OperationBuilder(0)
                 },
                 () => {
-                  let counter_ = this.state.counter;
-                  this.setState({ counter: counter_ + 1});
                   this.setState({ appendElement: true });
                 }
               );
             }}
           >
             Add Arg
-          </button>
+        </button>)}
         </div>
 
         {this.arrayOfArguments()}
@@ -177,3 +190,4 @@ export default class App extends React.Component<IProps, IState> {
     );
   }
 }
+
