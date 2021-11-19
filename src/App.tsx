@@ -12,7 +12,7 @@ interface IState {
   operation: number[];
   arguments: any[];
   element: JSX.Element[];
-  unmountAddArg: boolean;
+  unmountAddArg: boolean[];
   counter: number;
 }
 
@@ -37,7 +37,7 @@ export default class App extends React.Component<IProps, IState> {
     operation: [],
     arguments: [],
     element: [],
-    unmountAddArg: false,
+    unmountAddArg: [],
     counter: 0
   };
 
@@ -45,6 +45,11 @@ export default class App extends React.Component<IProps, IState> {
     if (this.state.appendElement) {
       var arguments_ = this.state.arguments;
       arguments_.push(this.state.element);
+
+      var unmountAddArg_ = this.state.unmountAddArg;
+      unmountAddArg_[this.state.counter] = true;
+
+      this.setState({ unmountAddArg: unmountAddArg_ });
       this.setState({ arguments: arguments_ });
       this.setState({ appendElement: false });
     }
@@ -85,7 +90,8 @@ export default class App extends React.Component<IProps, IState> {
 
   addArgument(): JSX.Element[] {
     var array = [];
-
+    const counter_ = this.state.counter;
+    
     const textfield = (
       <div style={{ float: "left", height: "70" }}>
         <input type="text" size="5" />
@@ -100,8 +106,7 @@ export default class App extends React.Component<IProps, IState> {
 
     const button = (
       <div>
-        {" "}
-        {this.state.unmountAddArg && (
+        {this.state.unmountAddArg[counter_] && (
           <div style={{ position: "relative" }}>
             <button
               type="button"
@@ -111,6 +116,8 @@ export default class App extends React.Component<IProps, IState> {
                     element: this.OperationBuilder(0)
                   },
                   () => {
+                    let counter_ = this.state.counter;
+                    this.setState({ counter: counter_ + 1});
                     this.setState({ appendElement: true });
                   }
                 );
@@ -170,4 +177,3 @@ export default class App extends React.Component<IProps, IState> {
     );
   }
 }
-
