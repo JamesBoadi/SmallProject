@@ -9,7 +9,7 @@ interface IProps {}
 
 interface IState {
   appendElement: boolean;
-  operation: number[];
+  operation: string;
   arguments: any[];
   arrayOfElements: JSX.Element[];
   unmountAddArg: boolean[];
@@ -25,10 +25,23 @@ const booleanValues = [
   { label: "False", value: false }
 ];
 
+const menu = [
+  { label: "Constant", value: "Constant" },
+  { label: "Argument", value: "Argument" },
+  { label: "And", value: "And" },
+  { label: "Or", value: "Or" },
+  { label: "Xor", value: "Xor" }
+];
+
 export default class App extends React.Component<IProps, IState> {
+  constructor(props: any) {
+    super(props);
+    this.setSelectedValue = this.setSelectedValue.bind(this);
+  }
+
   state: IState = {
     appendElement: false,
-    operation: [],
+    operation: "",
     arguments: [],
     arrayOfElements: [],
     unmountAddArg: [true, false],
@@ -43,11 +56,10 @@ export default class App extends React.Component<IProps, IState> {
       let unmountAddArg_ = this.state.unmountAddArg;
 
       if (counter_ === 0) unmountAddArg_[0] = false;
-      else
-        unmountAddArg_[1] = true;
-      
+      else unmountAddArg_[1] = true;
+
       arguments_.push(arrayOfElements);
-     
+
       this.setState({ unmountAddArg: unmountAddArg_ });
       this.setState({ counter: counter_ + 1 });
       this.setState({ arguments: arguments_ });
@@ -69,10 +81,9 @@ export default class App extends React.Component<IProps, IState> {
 
   setSelectedValue(value: Array<OptionType>, meta: ActionMeta<OptionType>) {
     const val = JSON.parse(JSON.stringify(value));
-    console.log(val.label);
-    this.setState({ operation: val });
+    this.setState({ operation: val.label });
   }
-  
+
   // Call this function every time myArg or an operator is selected
   OperationBuilder(key: number): JSX.Element[] {
     // Render a new element based on what was selected
@@ -93,10 +104,12 @@ export default class App extends React.Component<IProps, IState> {
     const select = this.createSelect();
     const textField = this.createTextField();
 
-    const html = <div style={{display: "inline-block"}}>
-      {select}
-      {textField}
-    </div>
+    const html = (
+      <div style={{ display: "inline-block" }}>
+        {select}
+        {textField}
+      </div>
+    );
 
     array.push(html);
     return array;
@@ -130,9 +143,8 @@ export default class App extends React.Component<IProps, IState> {
             <button
               type="button"
               onClick={() => {
-                
                 const arrayOfElements = this.OperationBuilder(0);
-            
+
                 this.setState(
                   {
                     arrayOfElements: arrayOfElements
@@ -152,6 +164,41 @@ export default class App extends React.Component<IProps, IState> {
 
     return button;
   }
+
+
+
+  /* ----- For Operations ----- */
+
+  resetButton() {
+    const resetButton = (
+      <div style={{ position: "relative"}}>
+      <button
+        type="button"
+        onClick={() => {
+          
+        }}
+      >
+        Reset
+      </button>
+      </div>
+    );
+
+    return resetButton;
+  }
+
+  createMenu()
+  {
+    const select = (
+      <div style={{ width: "15ex", float: "left", 
+      zIndex:999, display: "inline-block" }}>
+        <Select options={menu} onChange={this.setSelectedValue} />
+      </div>
+    );
+
+    return select;
+  }
+
+  /* ----------------------- */
 
   arrayOfArguments() {
     var arguments_ = this.state.arguments;
@@ -183,7 +230,6 @@ export default class App extends React.Component<IProps, IState> {
                     arrayOfElements: arrayOfElements
                   },
                   () => {
-
                     let unmountAddArg_ = this.state.unmountAddArg;
                     unmountAddArg_[1] = true;
                     this.setState({ unmountAddArg: unmountAddArg_ });
@@ -199,6 +245,14 @@ export default class App extends React.Component<IProps, IState> {
 
         {this.arrayOfArguments()}
         {this.createButton()}
+
+        <div style={{transform: "translateY(30px)"}}>
+          {this.createMenu()}
+          {this.resetButton()}
+
+        </div>
+        
+
       </div>
     );
   }
