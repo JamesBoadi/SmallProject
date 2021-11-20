@@ -20,12 +20,6 @@ interface Array<OptionType> {
   (arg: OptionType): OptionType;
 }
 
-const actions = [
-  { label: "Add", value: 1 },
-  { label: "Edit", value: 2 },
-  { label: "Delete", value: 3 }
-];
-
 const booleanValues = [
   { label: "True", value: true },
   { label: "False", value: false }
@@ -37,24 +31,25 @@ export default class App extends React.Component<IProps, IState> {
     operation: [],
     arguments: [],
     arrayOfElements: [],
-    unmountAddArg: [true],
+    unmountAddArg: [true, false],
     counter: 0
   };
 
   componentDidUpdate(prevProps: IProps, prevState: IState, snapshot: any) {
     if (this.state.appendElement) {
       let arguments_ = this.state.arguments;
-      let counter_ = this.state.counter + 1;
+      let counter_ = this.state.counter;
       let arrayOfElements = this.state.arrayOfElements;
-
       let unmountAddArg_ = this.state.unmountAddArg;
-      if (counter_ <= 1) unmountAddArg_[0] = false;
 
-      arrayOfElements.pop(); // Remove button
-      arrayOfElements.push(this.createButton(counter_))
-      arguments_.push(this.state.arrayOfElements);
-
-      this.setState({ counter: counter_ });
+      if (counter_ === 0) unmountAddArg_[0] = false;
+      else
+        unmountAddArg_[1] = true;
+      
+      arguments_.push(arrayOfElements);
+     
+      this.setState({ unmountAddArg: unmountAddArg_ });
+      this.setState({ counter: counter_ + 1 });
       this.setState({ arguments: arguments_ });
       this.setState({ appendElement: false });
     }
@@ -77,7 +72,7 @@ export default class App extends React.Component<IProps, IState> {
     console.log(val.label);
     this.setState({ operation: val });
   }
-
+  
   // Call this function every time myArg or an operator is selected
   OperationBuilder(key: number): JSX.Element[] {
     // Render a new element based on what was selected
@@ -95,18 +90,15 @@ export default class App extends React.Component<IProps, IState> {
 
   addArgument(): JSX.Element[] {
     var array = [];
-    const counter_ = this.state.counter;
-    var unmountAddArg_ = this.state.unmountAddArg;
-    unmountAddArg_[counter_] = false;
-
-    const button = this.createButton(counter_);
     const select = this.createSelect();
     const textField = this.createTextField();
 
-    this.setState({ unmountAddArg: unmountAddArg_ });
+    const html = <div style={{display: "inline-block"}}>
+      {select}
+      {textField}
+    </div>
 
-    array.push(button, select, textField);
-
+    array.push(html);
     return array;
   }
 
@@ -123,17 +115,17 @@ export default class App extends React.Component<IProps, IState> {
   createSelect(): JSX.Element {
     const select = (
       <div style={{ width: "15ex", display: "inline-block" }}>
-        <Select options={actions} onChange={this.setSelectedValue} />
+        <Select options={booleanValues} onChange={this.setSelectedValue} />
       </div>
     );
 
     return select;
   }
 
-  createButton(counter: number): JSX.Element {
+  createButton(): JSX.Element {
     const button = (
       <div style={{ position: "relative" }}>
-        {this.state.unmountAddArg[counter] && (
+        {this.state.unmountAddArg[1] && (
           <div>
             <button
               type="button"
@@ -151,7 +143,7 @@ export default class App extends React.Component<IProps, IState> {
                 );
               }}
             >
-              New Button
+              Add Arg
             </button>
           </div>
         )}
@@ -177,11 +169,11 @@ export default class App extends React.Component<IProps, IState> {
         </div>
 
         <div style={{ width: "15ex", display: "inline-block" }}>
-          <Select options={actions} onChange={this.setSelectedValue} />
+          <Select options={booleanValues} onChange={this.setSelectedValue} />
         </div>
 
         <div style={{ position: "relative" }}>
-          {this.state.unmountAddArg[counter_] && (
+          {this.state.unmountAddArg[0] && (
             <button
               type="button"
               onClick={() => {
@@ -191,6 +183,10 @@ export default class App extends React.Component<IProps, IState> {
                     arrayOfElements: arrayOfElements
                   },
                   () => {
+
+                    let unmountAddArg_ = this.state.unmountAddArg;
+                    unmountAddArg_[1] = true;
+                    this.setState({ unmountAddArg: unmountAddArg_ });
                     this.setState({ appendElement: true });
                   }
                 );
@@ -202,9 +198,9 @@ export default class App extends React.Component<IProps, IState> {
         </div>
 
         {this.arrayOfArguments()}
+        {this.createButton()}
       </div>
     );
   }
 }
-
 
