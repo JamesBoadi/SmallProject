@@ -4,6 +4,7 @@ import Select, { ActionMeta } from "react-select";
 type Args = { [argname: string]: boolean };
 type Operation = any;
 type OptionType = { label: string; value: string };
+type ArgType = [{ label: string; value: number }];
 
 interface IProps {}
 
@@ -14,6 +15,8 @@ interface IState {
   arrayOfElements: JSX.Element[];
   unmountAddArg: boolean[];
   counter: number;
+  listOfArguments: ArgType;
+  selectedArgumentOption: number;
 }
 
 interface Array<OptionType> {
@@ -26,11 +29,11 @@ const booleanValues = [
 ];
 
 const menu = [
-  { label: "Constant", value: "Constant" },
-  { label: "Argument", value: "Argument" },
-  { label: "And", value: "And" },
-  { label: "Or", value: "Or" },
-  { label: "Xor", value: "Xor" }
+  { label: "Constant", value: 0 },
+  { label: "Argument", value: 1 },
+  { label: "And", value: 2 },
+  { label: "Or", value: 3 },
+  { label: "Xor", value: 4 }
 ];
 
 export default class App extends React.Component<IProps, IState> {
@@ -45,7 +48,11 @@ export default class App extends React.Component<IProps, IState> {
     arguments: [],
     arrayOfElements: [],
     unmountAddArg: [true, false],
-    counter: 0
+    counter: 0,
+
+    /* For operatons */
+    selectedArgumentOption: 1,
+    listOfArguments: [{ label: "", value: 0 }]
   };
 
   componentDidUpdate(prevProps: IProps, prevState: IState, snapshot: any) {
@@ -165,32 +172,30 @@ export default class App extends React.Component<IProps, IState> {
     return button;
   }
 
-
-
   /* ----- For Operations ----- */
 
   resetButton() {
     const resetButton = (
-      <div style={{ position: "relative"}}>
-      <button
-        type="button"
-        onClick={() => {
-          
-        }}
-      >
-        Reset
-      </button>
+      <div style={{ position: "relative" }}>
+        <button type="button" onClick={() => {}}>
+          Reset
+        </button>
       </div>
     );
 
     return resetButton;
   }
 
-  createMenu()
-  {
+  createMenu() {
     const select = (
-      <div style={{ width: "15ex", float: "left", 
-      zIndex:999, display: "inline-block" }}>
+      <div
+        style={{
+          width: "15ex",
+          float: "left",
+          zIndex: 999,
+          display: "inline-block"
+        }}
+      >
         <Select options={menu} onChange={this.setSelectedValue} />
       </div>
     );
@@ -246,15 +251,30 @@ export default class App extends React.Component<IProps, IState> {
         {this.arrayOfArguments()}
         {this.createButton()}
 
-        <div style={{transform: "translateY(30px)"}}>
-          {this.createMenu()}
+        <div style={{ transform: "translateY(30px)" }}>
+          {() => {
+            const key = this.state.selectedArgumentOption;
+            switch (key) {
+              case 0:
+                break;
+              case 1:
+                break;
+              case 2:
+                break;
+              case 3:
+                break;
+              case 4:
+                break;
+
+              default:
+                break;
+            }
+
+            this.createMenu();
+          }}
           {this.resetButton()}
-
         </div>
-        
-
       </div>
     );
   }
 }
-
