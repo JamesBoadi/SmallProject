@@ -15,8 +15,13 @@ interface IState {
   arrayOfElements: JSX.Element[];
   unmountAddArg: boolean[];
   counter: number;
+
+  /* For operatons */
+  updateMenu: boolean;
   listOfArguments: ArgType;
   selectedArgumentOption: number;
+  menu: JSX.Element;
+  tempMenu: JSX.Element;
 }
 
 interface Array<OptionType> {
@@ -51,10 +56,16 @@ export default class App extends React.Component<IProps, IState> {
     counter: 0,
 
     /* For operatons */
-    selectedArgumentOption: 1,
-    listOfArguments: [{ label: "", value: 0 }]
+    
+    selectedArgumentOption: 5,
+    listOfArguments: [{ label: "", value: 0 }],
+    menu: this.createMenu(),
+    tempMenu: this.createMenu(),
+    updateMenu: false
+
   };
 
+  
   componentDidUpdate(prevProps: IProps, prevState: IState, snapshot: any) {
     if (this.state.appendElement) {
       let arguments_ = this.state.arguments;
@@ -71,6 +82,11 @@ export default class App extends React.Component<IProps, IState> {
       this.setState({ counter: counter_ + 1 });
       this.setState({ arguments: arguments_ });
       this.setState({ appendElement: false });
+    }
+    if(this.state.updateMenu)
+    {
+      this.setState({menu: this.state.tempMenu})
+      this.setState({updateMenu: false });
     }
   }
 
@@ -258,20 +274,23 @@ export default class App extends React.Component<IProps, IState> {
               case 0:
                 break;
               case 1:
+                
                 break;
               case 2:
                 break;
               case 3:
                 break;
               case 4:
+                
                 break;
 
               default:
+                this.setState({tempMenu: this.createMenu()})
                 break;
             }
-
-            this.createMenu();
           }}
+
+          {this.state.menu}
           {this.resetButton()}
         </div>
       </div>
