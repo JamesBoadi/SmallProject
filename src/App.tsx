@@ -28,6 +28,10 @@ interface Array<OptionType> {
   (arg: OptionType): OptionType;
 }
 
+interface ArgArray<ArgType> {
+  (arg: ArgType): ArgType;
+}
+
 const booleanValues = [
   { label: "True", value: true },
   { label: "False", value: false }
@@ -45,6 +49,7 @@ export default class App extends React.Component<IProps, IState> {
   constructor(props: any) {
     super(props);
     this.setSelectedValue = this.setSelectedValue.bind(this);
+    this.setSelectedMenuValue = this.setSelectedMenuValue.bind(this);
   }
 
   state: IState = {
@@ -159,7 +164,7 @@ export default class App extends React.Component<IProps, IState> {
   }
 
   createButton(): JSX.Element {
-    const button = (
+    const button = 
       <div style={{ position: "relative" }}>
         {this.state.unmountAddArg[1] && (
           <div>
@@ -182,13 +187,18 @@ export default class App extends React.Component<IProps, IState> {
             </button>
           </div>
         )}
-      </div>
-    );
+      </div>;
+    
 
     return button;
   }
 
   /* ----- For Operations ----- */
+
+  setSelectedMenuValue(value: ArgArray<ArgType>, meta: ActionMeta<ArgType>) {
+    const val = JSON.parse(JSON.stringify(value));
+    this.setState({ selectedArgumentOption: val.label });
+  }
 
   resetButton() {
     const resetButton = (
@@ -212,11 +222,34 @@ export default class App extends React.Component<IProps, IState> {
           display: "inline-block"
         }}
       >
-        <Select options={menu} onChange={this.setSelectedValue} />
+        <Select options={menu} onChange={this.setSelectedMenuValue} />
       </div>
     );
 
     return select;
+  }
+
+  menuInterface(key: number)
+  {
+    switch (key) {
+      case 0:
+        break;
+      case 1:
+        
+        break;
+      case 2:
+        break;
+      case 3:
+        break;
+      case 4:
+        
+        break;
+
+      default:
+        this.setState({tempMenu: this.createMenu()})
+        break;
+    }
+
   }
 
   /* ----------------------- */
@@ -227,7 +260,9 @@ export default class App extends React.Component<IProps, IState> {
   }
 
   render() {
-    const counter_ = 0;
+   
+     
+    
     return (
       <div>
         {/* todo: use <OperationBuilder> and have an interface
@@ -268,27 +303,7 @@ export default class App extends React.Component<IProps, IState> {
         {this.createButton()}
 
         <div style={{ transform: "translateY(30px)" }}>
-          {() => {
-            const key = this.state.selectedArgumentOption;
-            switch (key) {
-              case 0:
-                break;
-              case 1:
-                
-                break;
-              case 2:
-                break;
-              case 3:
-                break;
-              case 4:
-                
-                break;
-
-              default:
-                this.setState({tempMenu: this.createMenu()})
-                break;
-            }
-          }}
+         
 
           {this.state.menu}
           {this.resetButton()}
