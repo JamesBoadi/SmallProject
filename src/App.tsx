@@ -1,15 +1,17 @@
 import React from "react";
 import Select, { ActionMeta } from "react-select";
+import { LinkedList } from "linked-list-typescript";
 
 type Args = { [argname: string]: boolean };
 type Operation = any;
 type OptionType = { label: string; value: string };
-type ArgType = [{ label: string; value: number }];
+type ArgType = { key: string; value: { text: string; select: boolean } };
+type ArgTypeOp = [{ label: string; value: number }];
 
 interface IProps {}
 
 interface IState {
-   /* For  Arguments */
+  /* For  Arguments */
   appendElement: boolean;
   operation: string;
   arguments: any[];
@@ -17,24 +19,22 @@ interface IState {
   unmountAddArg: boolean[];
   counter: number;
   updateArguments: boolean;
-  hashtableArguments: 
+  argumentsList: LinkedList<ArgType>;
 
   /* For operatons */
   updateMenu: boolean;
-  listOfArguments: ArgType;
+  listOfArguments_op: ArgTypeOp;
   selectedArgumentOption: number;
   menu: JSX.Element;
   tempMenu: JSX.Element;
-
-
 }
 
 interface Array<OptionType> {
   (arg: OptionType): OptionType;
 }
 
-interface ArgArray<ArgType> {
-  (arg: ArgType): ArgType;
+interface ArgArray<ArgTypeOp> {
+  (arg: ArgTypeOp): ArgTypeOp;
 }
 
 const booleanValues = [
@@ -66,13 +66,14 @@ export default class App extends React.Component<IProps, IState> {
     unmountAddArg: [true, false],
     counter: 0,
     updateArguments: false,
+    argumentsList: new LinkedList<ArgType>(),
 
     /* For operatons */
 
     selectedArgumentOption: 5,
 
     // Arguments
-    listOfArguments: [{ label: "", value: 0 }],
+    listOfArguments_op: [{ label: "", value: 0 }],
 
     // And Operator
 
@@ -104,8 +105,7 @@ export default class App extends React.Component<IProps, IState> {
       this.setState({ menu: this.state.tempMenu });
       this.setState({ updateMenu: false });
     }
-    if(this.state.updateArguments)
-    {
+    if (this.state.updateArguments) {
       this.setState({ updateArguments: !this.state.updateArguments });
     }
   }
@@ -128,8 +128,6 @@ export default class App extends React.Component<IProps, IState> {
 
   setSelectedValue(value: Array<OptionType>, meta: ActionMeta<OptionType>) {
     const val = JSON.parse(JSON.stringify(value));
-    const m = JSON.parse(JSON.stringify(meta));
-  //  console.log(val);
     // Read all of the values of the arguments
     const arrayOfArguments = this.arrayOfArguments();
 
@@ -142,8 +140,22 @@ export default class App extends React.Component<IProps, IState> {
       };
 
       const id = getValues(element);
+      const res = this.state.argumentsList.toArray()
+      .find(function(e) {
+        return e.key === id
+      });
+
+      const is
+   
 
     }
+
+    
+    for (let index = 0; index < list.length; index++) {
+      
+      
+    }
+
 
     this.setState({ operation: val.label });
   }
@@ -232,7 +244,10 @@ export default class App extends React.Component<IProps, IState> {
 
   /* ----- For Operations ----- */
 
-  setSelectedMenuValue(value: ArgArray<ArgType>, meta: ActionMeta<ArgType>) {
+  setSelectedMenuValue(
+    value: ArgArray<ArgTypeOp>,
+    meta: ActionMeta<ArgTypeOp>
+  ) {
     const val = JSON.parse(JSON.stringify(value));
     this.setState({ selectedArgumentOption: val.label });
 
@@ -302,11 +317,11 @@ export default class App extends React.Component<IProps, IState> {
         {/* todo: use <OperationBuilder> and have an interface
             for entering arguments and seeing the result */}
         <div id={"0"} style={{ float: "left", height: "70" }}>
-          <input  type="text" size="5" />
+          <input type="text" size="5" />
         </div>
 
         <div id={"0"} style={{ width: "15ex", display: "inline-block" }}>
-          <Select  options={booleanValues} onChange={this.setSelectedValue} />
+          <Select options={booleanValues} onChange={this.setSelectedValue} />
         </div>
 
         <div id={"0"} style={{ position: "relative" }}>
@@ -344,3 +359,4 @@ export default class App extends React.Component<IProps, IState> {
     );
   }
 }
+
