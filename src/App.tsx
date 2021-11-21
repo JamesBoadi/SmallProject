@@ -9,12 +9,15 @@ type ArgType = [{ label: string; value: number }];
 interface IProps {}
 
 interface IState {
+   /* For  Arguments */
   appendElement: boolean;
   operation: string;
   arguments: any[];
   arrayOfElements: JSX.Element[];
   unmountAddArg: boolean[];
   counter: number;
+  updateArguments: boolean;
+  hashtableArguments: 
 
   /* For operatons */
   updateMenu: boolean;
@@ -22,6 +25,8 @@ interface IState {
   selectedArgumentOption: number;
   menu: JSX.Element;
   tempMenu: JSX.Element;
+
+
 }
 
 interface Array<OptionType> {
@@ -60,12 +65,13 @@ export default class App extends React.Component<IProps, IState> {
     arrayOfElements: [],
     unmountAddArg: [true, false],
     counter: 0,
+    updateArguments: false,
 
     /* For operatons */
-    
+
     selectedArgumentOption: 5,
-    
-    // Arguments 
+
+    // Arguments
     listOfArguments: [{ label: "", value: 0 }],
 
     // And Operator
@@ -75,10 +81,8 @@ export default class App extends React.Component<IProps, IState> {
     menu: this.createMenu(),
     tempMenu: this.createMenu(),
     updateMenu: false
-
   };
 
-  
   componentDidUpdate(prevProps: IProps, prevState: IState, snapshot: any) {
     if (this.state.appendElement) {
       let arguments_ = this.state.arguments;
@@ -96,16 +100,22 @@ export default class App extends React.Component<IProps, IState> {
       this.setState({ arguments: arguments_ });
       this.setState({ appendElement: false });
     }
-    if(this.state.updateMenu)
+    if (this.state.updateMenu) {
+      this.setState({ menu: this.state.tempMenu });
+      this.setState({ updateMenu: false });
+    }
+    if(this.state.updateArguments)
     {
-      this.setState({menu: this.state.tempMenu})
-      this.setState({updateMenu: false });
+      this.setState({ updateArguments: !this.state.updateArguments });
     }
   }
 
   shouldComponentUpdate(nextProps: IProps, nextState: IState) {
-    if (this.state.appendElement !== nextState.appendElement ||
-      this.state.updateMenu !== nextState.updateMenu) {
+    if (
+      this.state.appendElement !== nextState.appendElement ||
+      this.state.updateMenu !== nextState.updateMenu ||
+      this.state.updateArguments !== nextState.updateArguments
+    ) {
       return true;
     }
     return false;
@@ -118,10 +128,22 @@ export default class App extends React.Component<IProps, IState> {
 
   setSelectedValue(value: Array<OptionType>, meta: ActionMeta<OptionType>) {
     const val = JSON.parse(JSON.stringify(value));
-    console.log("meta " + meta);
+    const m = JSON.parse(JSON.stringify(meta));
+  //  console.log(val);
     // Read all of the values of the arguments
+    const arrayOfArguments = this.arrayOfArguments();
 
+    for (let index = 0; index < arrayOfArguments.length; index++) {
+      const element = arrayOfArguments[index];
+      const getValues = (element: Element) => {
+        const element_ = JSON.parse(JSON.stringify(element))[0];
+        const id = element_.props.id;
+        return id;
+      };
 
+      const id = getValues(element);
+
+    }
 
     this.setState({ operation: val.label });
   }
@@ -147,7 +169,7 @@ export default class App extends React.Component<IProps, IState> {
     const textField = this.createTextField();
 
     const html = (
-      <div style={{ display: "inline-block" }}>
+      <div id={"0"} style={{ display: "inline-block" }}>
         {select}
         {textField}
       </div>
@@ -178,11 +200,12 @@ export default class App extends React.Component<IProps, IState> {
   }
 
   createButton(): JSX.Element {
-    const button = 
-      <div style={{ position: "relative" }}>
+    const button = (
+      <div id={"0"} style={{ position: "relative" }}>
         {this.state.unmountAddArg[1] && (
           <div>
             <button
+              id={"0"}
               type="button"
               onClick={() => {
                 const arrayOfElements = this.OperationBuilder(0);
@@ -201,8 +224,8 @@ export default class App extends React.Component<IProps, IState> {
             </button>
           </div>
         )}
-      </div>;
-    
+      </div>
+    );
 
     return button;
   }
@@ -213,7 +236,7 @@ export default class App extends React.Component<IProps, IState> {
     const val = JSON.parse(JSON.stringify(value));
     this.setState({ selectedArgumentOption: val.label });
 
-    this.setState({menu: this.state.tempMenu})
+    this.setState({ menu: this.state.tempMenu });
 
     this.setState({ updateMenu: true });
   }
@@ -240,34 +263,28 @@ export default class App extends React.Component<IProps, IState> {
           display: "inline-block"
         }}
       >
-        <Select options={menu} onChange={this.setSelectedMenuValue} 
-          
-        
-        />
+        <Select options={menu} onChange={this.setSelectedMenuValue} />
       </div>
     );
 
     return select;
   }
 
-  menuInterface(key: number)
-  {
+  menuInterface(key: number) {
     switch (key) {
       case 0:
         break;
       case 1:
-        
         break;
       case 2:
         break;
       case 3:
         break;
       case 4:
-        
         break;
 
       default:
-        this.setState({tempMenu: this.createMenu()})
+        this.setState({ tempMenu: this.createMenu() });
         break;
     }
   }
@@ -280,25 +297,21 @@ export default class App extends React.Component<IProps, IState> {
   }
 
   render() {
-   
-     
-    
     return (
       <div>
         {/* todo: use <OperationBuilder> and have an interface
             for entering arguments and seeing the result */}
-        <div style={{ float: "left", height: "70" }}>
-          <input id={'0'} type="text" size="5" />
+        <div id={"0"} style={{ float: "left", height: "70" }}>
+          <input  type="text" size="5" />
         </div>
 
-        <div style={{ width: "15ex", display: "inline-block" }}>
-          <Select options={booleanValues} onChange={this.setSelectedValue} />
+        <div id={"0"} style={{ width: "15ex", display: "inline-block" }}>
+          <Select  options={booleanValues} onChange={this.setSelectedValue} />
         </div>
 
-        <div style={{ position: "relative" }}>
+        <div id={"0"} style={{ position: "relative" }}>
           {this.state.unmountAddArg[0] && (
             <button
-              id={'0'}
               type="button"
               onClick={() => {
                 const arrayOfElements = this.OperationBuilder(0);
