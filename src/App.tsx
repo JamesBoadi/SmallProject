@@ -1,11 +1,10 @@
 import React from "react";
-import Select, { ActionMeta } from "react-select";
 import { LinkedList } from "linked-list-typescript";
 
 type Args = { [argname: string]: boolean };
 type Operation = any;
-type OptionType = { label: string; value: string };
-type ArgType = { key: string; value: { text: string; select: boolean } };
+type OptionType = { id: string; label: string; value: string };
+type ArgType = { id: string; value: { text: string; select: boolean } };
 type ArgTypeOp = [{ label: string; value: number }];
 
 interface IProps {}
@@ -126,10 +125,13 @@ export default class App extends React.Component<IProps, IState> {
       given some args */
   }
 
-  setSelectedValue(value: Array<OptionType>, meta: ActionMeta<OptionType>) {
-    const val = JSON.parse(JSON.stringify(value));
+  setSelectedValue(e: React.FormEvent<HTMLSelectElement>) {
+    const val = e.currentTarget.value;
+    let id = e.currentTarget.id;
+
     // Read all of the values of the arguments
-    const arrayOfArguments = this.arrayOfArguments();
+    let arrayOfArguments = this.arrayOfArguments();
+    //console.log("id " + val.id);
 
     for (let index = 0; index < arrayOfArguments.length; index++) {
       const element = arrayOfArguments[index];
@@ -139,25 +141,25 @@ export default class App extends React.Component<IProps, IState> {
         return id;
       };
 
-      const id = getValues(element);
-      const res = this.state.argumentsList.toArray()
-      .find(function(e) {
-        return e.key === id
+      getValues(element);
+      const res = this.state.argumentsList.toArray().find(function (e) {
+        return e.id === id;
       });
 
-      const is
-   
+      if (res !== undefined) {
+        let newRes = {
+          id: id,
+          value: { text: res.value.text, select: Boolean(val) }
+        };
 
+        arrayOfArguments[parseInt(id, 0)] = newRes;
+        this.setState({ arguments: arrayOfArguments });
+      }
+      // const is
     }
 
-    
-    for (let index = 0; index < list.length; index++) {
-      
-      
-    }
 
-
-    this.setState({ operation: val.label });
+    //  this.setState({ operation: val.label });
   }
 
   // Call this function every time myArg or an operator is selected
@@ -204,10 +206,12 @@ export default class App extends React.Component<IProps, IState> {
   createSelect(): JSX.Element {
     const select = (
       <div style={{ width: "15ex", display: "inline-block" }}>
-        <Select options={booleanValues} onChange={this.setSelectedValue} />
+        <select name="boolean" id="id">
+          <option value="true">true</option>
+          <option value="false">false</option>
+        </select>
       </div>
     );
-
     return select;
   }
 
@@ -245,8 +249,8 @@ export default class App extends React.Component<IProps, IState> {
   /* ----- For Operations ----- */
 
   setSelectedMenuValue(
-    value: ArgArray<ArgTypeOp>,
-    meta: ActionMeta<ArgTypeOp>
+    value: ArgArray<ArgTypeOp>
+    //meta: ActionMeta<ArgTypeOp>
   ) {
     const val = JSON.parse(JSON.stringify(value));
     this.setState({ selectedArgumentOption: val.label });
@@ -278,7 +282,12 @@ export default class App extends React.Component<IProps, IState> {
           display: "inline-block"
         }}
       >
-        <Select options={menu} onChange={this.setSelectedMenuValue} />
+        <select name="cars" id="cars">
+          <option value="volvo">Volvo</option>
+          <option value="saab">Saab</option>
+          <option value="opel">Opel</option>
+          <option value="audi">Audi</option>
+        </select>
       </div>
     );
 
@@ -321,7 +330,10 @@ export default class App extends React.Component<IProps, IState> {
         </div>
 
         <div id={"0"} style={{ width: "15ex", display: "inline-block" }}>
-          <Select options={booleanValues} onChange={this.setSelectedValue} />
+          <select id="0" onChange={this.setSelectedValue}>
+            <option value="true">true</option>
+            <option value="false">false</option>
+          </select>
         </div>
 
         <div id={"0"} style={{ position: "relative" }}>
@@ -359,4 +371,3 @@ export default class App extends React.Component<IProps, IState> {
     );
   }
 }
-
