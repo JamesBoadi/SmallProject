@@ -53,6 +53,7 @@ export default class App extends React.Component<IProps, IState> {
   }
 
   state: IState = {
+    /* For  Arguments */
     appendElement: false,
     operation: "",
     arguments: [],
@@ -63,7 +64,14 @@ export default class App extends React.Component<IProps, IState> {
     /* For operatons */
     
     selectedArgumentOption: 5,
+    
+    // Arguments 
     listOfArguments: [{ label: "", value: 0 }],
+
+    // And Operator
+
+    // Not Operator
+
     menu: this.createMenu(),
     tempMenu: this.createMenu(),
     updateMenu: false
@@ -96,7 +104,8 @@ export default class App extends React.Component<IProps, IState> {
   }
 
   shouldComponentUpdate(nextProps: IProps, nextState: IState) {
-    if (this.state.appendElement !== nextState.appendElement) {
+    if (this.state.appendElement !== nextState.appendElement ||
+      this.state.updateMenu !== nextState.updateMenu) {
       return true;
     }
     return false;
@@ -109,6 +118,11 @@ export default class App extends React.Component<IProps, IState> {
 
   setSelectedValue(value: Array<OptionType>, meta: ActionMeta<OptionType>) {
     const val = JSON.parse(JSON.stringify(value));
+    console.log("meta " + meta);
+    // Read all of the values of the arguments
+
+
+
     this.setState({ operation: val.label });
   }
 
@@ -198,6 +212,10 @@ export default class App extends React.Component<IProps, IState> {
   setSelectedMenuValue(value: ArgArray<ArgType>, meta: ActionMeta<ArgType>) {
     const val = JSON.parse(JSON.stringify(value));
     this.setState({ selectedArgumentOption: val.label });
+
+    this.setState({menu: this.state.tempMenu})
+
+    this.setState({ updateMenu: true });
   }
 
   resetButton() {
@@ -222,7 +240,10 @@ export default class App extends React.Component<IProps, IState> {
           display: "inline-block"
         }}
       >
-        <Select options={menu} onChange={this.setSelectedMenuValue} />
+        <Select options={menu} onChange={this.setSelectedMenuValue} 
+          
+        
+        />
       </div>
     );
 
@@ -249,7 +270,6 @@ export default class App extends React.Component<IProps, IState> {
         this.setState({tempMenu: this.createMenu()})
         break;
     }
-
   }
 
   /* ----------------------- */
@@ -268,7 +288,7 @@ export default class App extends React.Component<IProps, IState> {
         {/* todo: use <OperationBuilder> and have an interface
             for entering arguments and seeing the result */}
         <div style={{ float: "left", height: "70" }}>
-          <input type="text" size="5" />
+          <input id={'0'} type="text" size="5" />
         </div>
 
         <div style={{ width: "15ex", display: "inline-block" }}>
@@ -278,6 +298,7 @@ export default class App extends React.Component<IProps, IState> {
         <div style={{ position: "relative" }}>
           {this.state.unmountAddArg[0] && (
             <button
+              id={'0'}
               type="button"
               onClick={() => {
                 const arrayOfElements = this.OperationBuilder(0);
@@ -303,8 +324,6 @@ export default class App extends React.Component<IProps, IState> {
         {this.createButton()}
 
         <div style={{ transform: "translateY(30px)" }}>
-         
-
           {this.state.menu}
           {this.resetButton()}
         </div>
