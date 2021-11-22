@@ -24,7 +24,8 @@ interface IState {
   updateArguments: boolean;
   argumentsArr: ArgType[];
   argumentsList: LinkedList<number>;
-  edit: number;
+  value: string;
+  id: string;
 
   /* For operatons */
   updateMenu: boolean;
@@ -73,7 +74,9 @@ export default class App extends React.Component<IProps, IState> {
     updateArguments: false,
     argumentsArr: [],
     argumentsList: new LinkedList<number>(),
-    edit: 0,
+    value: '',
+    id: "0",
+    
 
     /* For operatons */
 
@@ -113,11 +116,49 @@ export default class App extends React.Component<IProps, IState> {
       this.setState({ updateMenu: false });
     }
     if (this.state.updateArguments) {
-      let arguments_ = this.state.argumentsList.toArray();
+
+      const id = this.state.id;
+      console.log(id);
+      let flag = false;
+
+      // Read all of the values of the arguments
+      for (let i = 0; i < localStorage.length; i++) {
+        const key: any = localStorage.key(i);
+        if ((key !== null || key !== undefined) && key === id) {
+          // Replace values
+          let item = localStorage.getItem(key);
+          const json = JSON.parse(JSON.stringify(item));
+
+          let newRes = {
+            id: id,
+            found: true,
+            value:
+              json.value === undefined
+                ? { text: "", select: val }
+                : { text: json.value.text, select: val }
+          };
+
+          localStorage.removeItem(id);
+          localStorage.setItem(id, JSON.stringify(newRes));
+          flag = true;
+          break;
+        }
+      }
+
+      if (!flag) {
+        // New entry
+        let newRes = {
+          id: id,
+          found: true,
+          value: { text: "", select: val }
+        };
+
+        localStorage.setItem(id, JSON.stringify(newRes));
+      }
 
       for (var i = 0; i < localStorage.length; i++) {
         const item = localStorage.getItem(i.toString());
-        console.log(item);
+        //     console.log("i " + item);
       }
 
       this.setState({ updateArguments: !this.state.updateArguments });
@@ -129,7 +170,7 @@ export default class App extends React.Component<IProps, IState> {
       this.state.appendElement !== nextState.appendElement ||
       this.state.updateMenu !== nextState.updateMenu ||
       this.state.updateArguments !== nextState.updateArguments ||
-      this.state.edit !== nextState.edit
+      this.state.id !== nextState.id
     ) {
       return true;
     }
@@ -143,55 +184,6 @@ export default class App extends React.Component<IProps, IState> {
 
   setSelectedValue(e: React.FormEvent<HTMLSelectElement>) {
     const val = e.currentTarget.value;
-    let id = e.currentTarget.id;
-    let flag = false;
-    // Read all of the values of the arguments
-    let arrayOfElements = this.arrayOfElements();
-    let argumentsList_ = this.state.argumentsList;
-    let argumentsArr_ = this.state.argumentsArr;
-    //console.log("id " + val.id);
-
-    // For testing
-    for (let index = 0; index < arrayOfElements.length; index++) {
-      const element = arrayOfElements[index];
-      const getValues = (element: Element) => {
-        const element_ = JSON.parse(JSON.stringify(element))[0];
-        const id = element_.props.id;
-        return id;
-      };
-
-      getValues(element);
-    }
-    for (let i = 0; i < localStorage.length; i++) {
-      const key: any = localStorage.key(i);
-      if ((key !== null || key !== undefined) && key === id) {
-        // Replace values
-        let item = localStorage.getItem(key);
-        const json = JSON.parse(JSON.stringify(item));
-        let newRes = {
-          id: id,
-          found: true,
-          value: { text: json.value.text || undefined, select: val }
-        };
-
-        localStorage.removeItem(id);
-        localStorage.setItem(id, JSON.stringify(newRes));
-        flag = true;
-        break;
-      }
-    }
-
-    if (!flag) {
-      // New entry
-      let newRes = {
-        id: id,
-        found: true,
-        value: { text: undefined, select: val }
-      };
-
-      localStorage.setItem(id, JSON.stringify(newRes));
-    }
-
     this.setState({ updateArguments: !this.state.updateArguments });
   }
 
@@ -211,17 +203,37 @@ export default class App extends React.Component<IProps, IState> {
   }
 
   addArgument(): JSX.Element[] {
-    var array = [];
+    var array: JSX.Element[] = [];
     const select = this.createSelect();
     const textField = this.createTextField();
 
+    let arrayOfElements = this.arrayOfElements();
+    let min = Number.MIN_VALUE;
+    let id_ = 0;
+
+    for (let index = 0; index < arrayOfElements.length; index++) {
+      const element = arrayOfElements[index];
+      const getValues = (element: Element) => {
+        const element_ = JSON.parse(JSON.stringify(element))[0];
+        let id = element_.props.id;
+        return parseInt(id, 0);
+      };
+
+      id_ = getValues(element) > min ? getValues(element) : min;
+      min = getValues(element) > min ? getValues(element) : min;
+    }
+
+    if (id_ === Number.MIN_VALUE) return array;
+
+    const finalID = (id_ + 1).toString();
+    this.setState({ id: finalID });
+
     const html = (
-      <div id={"0"} style={{ display: "inline-block" }}>
+      <div id={finalID} style={{ display: "inline-block" }}>
         {select}
         {textField}
       </div>
     );
-
     array.push(html);
     return array;
   }
@@ -229,7 +241,7 @@ export default class App extends React.Component<IProps, IState> {
   createTextField(): JSX.Element {
     const textfield = (
       <div style={{ float: "left", height: "70" }}>
-        <input type="text" size="5" />
+        <input type="text" size="5" id={this.state.id} />
       </div>
     );
 
@@ -239,7 +251,11 @@ export default class App extends React.Component<IProps, IState> {
   createSelect(): JSX.Element {
     const select = (
       <div style={{ width: "15ex", display: "inline-block" }}>
-        <select name="boolean" id="id">
+        <select
+          name="boolean"
+          id={this.state.id}
+          onChange={this.setSelectedValue}
+        >
           <option value="true">true</option>
           <option value="false">false</option>
         </select>
@@ -404,3 +420,4 @@ export default class App extends React.Component<IProps, IState> {
     );
   }
 }
+
