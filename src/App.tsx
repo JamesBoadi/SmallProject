@@ -25,7 +25,7 @@ interface IState {
   argumentsArr: ArgType[];
   argumentsList: LinkedList<number>;
   value: string;
-  id: string;
+  id: string[];
   keyCounter: number;
 
   /* For operatons */
@@ -76,7 +76,7 @@ export default class App extends React.Component<IProps, IState> {
     argumentsArr: [],
     argumentsList: new LinkedList<number>(),
     value: '',
-    id: "0",
+    id: ["0"],
     keyCounter: 0,
     
     /* For operatons */
@@ -97,8 +97,7 @@ export default class App extends React.Component<IProps, IState> {
 
   componentDidMount()
   {
-    if(this.state.keyCounter !== localStorage.length)
-      localStorage.clear();
+    
   }
 
   componentDidUpdate(prevProps: IProps, prevState: IState, snapshot: any) {
@@ -124,48 +123,7 @@ export default class App extends React.Component<IProps, IState> {
     }
     if (this.state.updateArguments) {
 
-      const id = this.state.id;
-      const val = this.state.value;
-      
-      let flag = false;
-
-      // Read all of the values of the arguments
-      for (let i = 0; i < localStorage.length; i++) {
-        const key: any = localStorage.key(i);
-        //console.log(key);
-        if ((key !== null || key !== undefined) && key === id) {
-          
-          // Replace values
-          let item = localStorage.getItem(key);
-          const json = JSON.parse(JSON.stringify(item));
-
-          let newRes = {
-            id: id,
-            found: true,
-            value:
-              json.value === undefined
-                ? { text: "", select: val }
-                : { text: json.value.text, select: val }
-          };
-
-          localStorage.removeItem(id);
-          localStorage.setItem(id, JSON.stringify(newRes));
-          flag = true;
-          break;
-        }
-      }
-
-      if (!flag) {
-        // New entry
-        let newRes = {
-          id: id,
-          found: true,
-          value: { text: "", select: val }
-        };
-
-        localStorage.setItem(id, JSON.stringify(newRes));
-      }
-      console.log("--->  " + localStorage.length);
+     
       for (var i = 0; i < localStorage.length; i++) {
         const item = localStorage.getItem(i.toString());
        //  console.log("--->  " + item);
@@ -196,6 +154,50 @@ export default class App extends React.Component<IProps, IState> {
   setSelectedValue(e: React.FormEvent<HTMLSelectElement>) {
     const val = e.currentTarget.value;
     this.setState({value: val});
+
+    
+    const id = this.state.id;
+    console.log("coun " + id);
+    console.log("key " + this.state.keyCounter);
+    
+    let flag = false;
+
+    // Read all of the values of the arguments
+    for (let i = 0; i < localStorage.length; i++) {
+      const key: any = localStorage.key(i);
+      //console.log(key);
+      if (key === id) {
+        
+        // Replace values
+        let item = localStorage.getItem(key);
+        const json = JSON.parse(JSON.stringify(item));
+
+        let newRes = {
+          id: id,
+          found: true,
+          value:
+            json.value === undefined
+              ? { text: "", select: val }
+              : { text: json.value.text, select: val }
+        };
+
+        localStorage.setItem(id, JSON.stringify(newRes));
+        flag = true;
+        break;
+      }
+    }
+
+    if (!flag) {
+      // New entry
+      let newRes = {
+        id: id,
+        found: true,
+        value: { text: "", select: val }
+      };
+
+      localStorage.setItem(id, JSON.stringify(newRes));
+    }
+
     this.setState({ updateArguments: !this.state.updateArguments });
   }
 
@@ -433,5 +435,6 @@ export default class App extends React.Component<IProps, IState> {
     );
   }
 }
+
 
 
