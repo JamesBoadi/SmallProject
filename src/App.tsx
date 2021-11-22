@@ -123,11 +123,8 @@ export default class App extends React.Component<IProps, IState> {
       this.setState({ updateMenu: false });
     }
     if (this.state.updateArguments) {
-      for (var i = 0; i < localStorage.length; i++) {
-        const item = localStorage.getItem(i.toString());
-        //  console.log("--->  " + item);
-      }
-
+      // When arguments is selected from list
+      this.storeArguments();
       this.setState({ updateArguments: !this.state.updateArguments });
     }
   }
@@ -138,8 +135,9 @@ export default class App extends React.Component<IProps, IState> {
       this.state.updateMenu !== nextState.updateMenu ||
       this.state.updateArguments !== nextState.updateArguments ||
       this.state.id !== nextState.id ||
-      this.state.idArr !== nextState.idArr ||
-      this.state.keyCounter !== nextState.keyCounter
+      this.state.idArr.length !== nextState.idArr.length ||
+      this.state.keyCounter !== nextState.keyCounter ||
+      this.state.argumentsArr.length !== nextState.argumentsArr.length
     ) {
       return true;
     }
@@ -152,51 +150,49 @@ export default class App extends React.Component<IProps, IState> {
   }
 
   setSelectedValue(e: React.FormEvent<HTMLSelectElement>) {
-    
-      let val = e.currentTarget.value;
-      let id = e.currentTarget.id;
+    let val = e.currentTarget.value;
+    let id = e.currentTarget.id;
 
-      this.setState({ value: val });
+    this.setState({ value: val });
 
-      console.log("coun " + id);
-      let flag = false;
+    console.log("coun " + id);
+    let flag = false;
 
-      // Read all of the values of the arguments
-      for (let i = 0; i < localStorage.length; i++) {
-        const key: any = localStorage.key(i);
-        //console.log(key);
-        if (key === id) {
-          // Replace values
-          let item = localStorage.getItem(key);
-          const json = JSON.parse(JSON.stringify(item));
+    // Read all of the values of the arguments
+    for (let i = 0; i < localStorage.length; i++) {
+      const key: any = localStorage.key(i);
+      //console.log(key);
+      if (key === id) {
+        // Replace values
+        let item = localStorage.getItem(key);
+        const json = JSON.parse(JSON.stringify(item));
 
-          let newRes = {
-            id: id,
-            found: true,
-            value:
-              json.value === undefined
-                ? { text: "", select: val }
-                : { text: json.value.text, select: val }
-          };
-
-          localStorage.setItem(id, JSON.stringify(newRes));
-          flag = true;
-          break;
-        }
-      }
-
-      if (!flag) {
-        // New entry
         let newRes = {
           id: id,
           found: true,
-          value: { text: "", select: val }
+          value:
+            json.value === undefined
+              ? { text: "", select: val }
+              : { text: json.value.text, select: val }
         };
-        localStorage.setItem(id, JSON.stringify(newRes));
-      }
 
-      this.setState({ updateArguments: !this.state.updateArguments });
-   
+        localStorage.setItem(id, JSON.stringify(newRes));
+        flag = true;
+        break;
+      }
+    }
+
+    if (!flag) {
+      // New entry
+      let newRes = {
+        id: id,
+        found: true,
+        value: { text: "", select: val }
+      };
+      localStorage.setItem(id, JSON.stringify(newRes));
+    }
+
+    this.setState({ updateArguments: !this.state.updateArguments });
   }
 
   // Call this function every time myArg or an operator is selected
@@ -240,7 +236,7 @@ export default class App extends React.Component<IProps, IState> {
 
     const finalID = (id_ + 1).toString();
     idArr[parseInt(finalID, 0)] = finalID;
-  //  console.log(finalID);
+
     this.setState({ id: finalID });
     this.setState({ idArr: idArr });
     this.setState({ keyCounter: this.state.keyCounter + 1 });
@@ -317,6 +313,25 @@ export default class App extends React.Component<IProps, IState> {
 
   /* ----- For Operations ----- */
 
+  storeArguments() {
+    var arguments_ = this.state.argumentsArr;
+
+    for (var i = 0; i < localStorage.length; i++) {
+      const item = JSON.parse(
+        JSON.stringify(localStorage.getItem(i.toString()))
+      );
+      arguments_[i] = item.value.text;
+    }
+
+    this.setState({argumentsArr: arguments_});
+  }
+
+  renderArguments()
+  {
+    var arguments_ = this.state.argumentsArr;
+    return arguments_.map((arguments_) => arguments_);
+  }
+
   setSelectedMenuValue(
     value: ArgArray<ArgTypeOp>
     //meta: ActionMeta<ArgTypeOp>
@@ -331,7 +346,7 @@ export default class App extends React.Component<IProps, IState> {
 
   resetButton() {
     const resetButton = (
-      <div style={{ position: "relative" }}>
+      <div style={{ position: "relative", display: "inline-block" }}>
         <button type="button" onClick={() => {}}>
           Reset
         </button>
@@ -346,16 +361,11 @@ export default class App extends React.Component<IProps, IState> {
       <div
         style={{
           width: "15ex",
-          float: "left",
-          zIndex: 999,
-          display: "inline-block"
+          float: "left"
         }}
       >
-        <select name="cars" id="cars">
-          <option value="volvo">Volvo</option>
-          <option value="saab">Saab</option>
-          <option value="opel">Opel</option>
-          <option value="audi">Audi</option>
+        <select name="cars" id="cars" onChange={this.setSelectedValue}>
+          <option value="arguments">Arguments</option>
         </select>
       </div>
     );
@@ -440,5 +450,3 @@ export default class App extends React.Component<IProps, IState> {
     );
   }
 }
-
-
