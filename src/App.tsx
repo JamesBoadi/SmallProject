@@ -25,7 +25,8 @@ interface IState {
   argumentsArr: ArgType[];
   argumentsList: LinkedList<number>;
   value: string;
-  id: string[];
+  idArr: string[];
+  id: string;
   keyCounter: number;
 
   /* For operatons */
@@ -75,10 +76,11 @@ export default class App extends React.Component<IProps, IState> {
     updateArguments: false,
     argumentsArr: [],
     argumentsList: new LinkedList<number>(),
-    value: '',
-    id: ["0"],
+    value: "",
+    idArr: ["1"],
+    id: "0",
     keyCounter: 0,
-    
+
     /* For operatons */
 
     selectedArgumentOption: 5,
@@ -95,9 +97,8 @@ export default class App extends React.Component<IProps, IState> {
     updateMenu: false
   };
 
-  componentDidMount()
-  {
-    
+  componentDidMount() {
+    if (localStorage.length !== this.state.keyCounter) localStorage.clear();
   }
 
   componentDidUpdate(prevProps: IProps, prevState: IState, snapshot: any) {
@@ -122,11 +123,9 @@ export default class App extends React.Component<IProps, IState> {
       this.setState({ updateMenu: false });
     }
     if (this.state.updateArguments) {
-
-     
       for (var i = 0; i < localStorage.length; i++) {
         const item = localStorage.getItem(i.toString());
-       //  console.log("--->  " + item);
+        //  console.log("--->  " + item);
       }
 
       this.setState({ updateArguments: !this.state.updateArguments });
@@ -139,6 +138,7 @@ export default class App extends React.Component<IProps, IState> {
       this.state.updateMenu !== nextState.updateMenu ||
       this.state.updateArguments !== nextState.updateArguments ||
       this.state.id !== nextState.id ||
+      this.state.idArr !== nextState.idArr ||
       this.state.keyCounter !== nextState.keyCounter
     ) {
       return true;
@@ -152,53 +152,51 @@ export default class App extends React.Component<IProps, IState> {
   }
 
   setSelectedValue(e: React.FormEvent<HTMLSelectElement>) {
-    const val = e.currentTarget.value;
-    this.setState({value: val});
-
     
-    const id = this.state.id;
-    console.log("coun " + id);
-    console.log("key " + this.state.keyCounter);
-    
-    let flag = false;
+      let val = e.currentTarget.value;
+      let id = e.currentTarget.id;
 
-    // Read all of the values of the arguments
-    for (let i = 0; i < localStorage.length; i++) {
-      const key: any = localStorage.key(i);
-      //console.log(key);
-      if (key === id) {
-        
-        // Replace values
-        let item = localStorage.getItem(key);
-        const json = JSON.parse(JSON.stringify(item));
+      this.setState({ value: val });
 
+      console.log("coun " + id);
+      let flag = false;
+
+      // Read all of the values of the arguments
+      for (let i = 0; i < localStorage.length; i++) {
+        const key: any = localStorage.key(i);
+        //console.log(key);
+        if (key === id) {
+          // Replace values
+          let item = localStorage.getItem(key);
+          const json = JSON.parse(JSON.stringify(item));
+
+          let newRes = {
+            id: id,
+            found: true,
+            value:
+              json.value === undefined
+                ? { text: "", select: val }
+                : { text: json.value.text, select: val }
+          };
+
+          localStorage.setItem(id, JSON.stringify(newRes));
+          flag = true;
+          break;
+        }
+      }
+
+      if (!flag) {
+        // New entry
         let newRes = {
           id: id,
           found: true,
-          value:
-            json.value === undefined
-              ? { text: "", select: val }
-              : { text: json.value.text, select: val }
+          value: { text: "", select: val }
         };
-
         localStorage.setItem(id, JSON.stringify(newRes));
-        flag = true;
-        break;
       }
-    }
 
-    if (!flag) {
-      // New entry
-      let newRes = {
-        id: id,
-        found: true,
-        value: { text: "", select: val }
-      };
-
-      localStorage.setItem(id, JSON.stringify(newRes));
-    }
-
-    this.setState({ updateArguments: !this.state.updateArguments });
+      this.setState({ updateArguments: !this.state.updateArguments });
+   
   }
 
   // Call this function every time myArg or an operator is selected
@@ -223,7 +221,8 @@ export default class App extends React.Component<IProps, IState> {
 
     let arrayOfElements = this.arrayOfElements();
     let min = Number.MIN_VALUE;
-    let id_ = 0;
+    let id_ = 1;
+    let idArr = this.state.idArr;
 
     for (let index = 0; index < arrayOfElements.length; index++) {
       const element = arrayOfElements[index];
@@ -237,10 +236,13 @@ export default class App extends React.Component<IProps, IState> {
       min = getValues(element) > min ? getValues(element) : min;
     }
 
-    if (id_ === Number.MIN_VALUE) return array;
+    if (id_ === Number.MIN_VALUE) id_ = 1;
 
     const finalID = (id_ + 1).toString();
+    idArr[parseInt(finalID, 0)] = finalID;
+  //  console.log(finalID);
     this.setState({ id: finalID });
+    this.setState({ idArr: idArr });
     this.setState({ keyCounter: this.state.keyCounter + 1 });
 
     const html = (
@@ -256,10 +258,13 @@ export default class App extends React.Component<IProps, IState> {
   createTextField(): JSX.Element {
     const textfield = (
       <div style={{ float: "left", height: "70" }}>
-        <input type="text" size="5" id={this.state.id} />
+        <input
+          type="text"
+          size="5"
+          id={this.state.idArr[parseInt(this.state.id, 0)]}
+        />
       </div>
     );
-
     return textfield;
   }
 
@@ -268,7 +273,7 @@ export default class App extends React.Component<IProps, IState> {
       <div style={{ width: "15ex", display: "inline-block" }}>
         <select
           name="boolean"
-          id={this.state.id}
+          id={this.state.idArr[parseInt(this.state.id, 0)]}
           onChange={this.setSelectedValue}
         >
           <option value="true">true</option>
@@ -435,6 +440,5 @@ export default class App extends React.Component<IProps, IState> {
     );
   }
 }
-
 
 
