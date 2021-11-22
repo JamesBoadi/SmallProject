@@ -4,7 +4,7 @@ import { LinkedList } from "linked-list-typescript";
 type Args = { [argname: string]: boolean };
 type Operation = any;
 type OptionType = { id: string; label: string; value: string };
-type ArgType = { id: string; value: { text: string; select: boolean } };
+type ArgType = { id: string; value: { text: any; select: boolean } };
 type ArgTypeOp = [{ label: string; value: number }];
 
 interface IProps {}
@@ -13,7 +13,7 @@ interface IState {
   /* For  Arguments */
   appendElement: boolean;
   operation: string;
-  arguments: any[];
+  elements: any[];
   arrayOfElements: JSX.Element[];
   unmountAddArg: boolean[];
   counter: number;
@@ -60,7 +60,7 @@ export default class App extends React.Component<IProps, IState> {
     /* For  Arguments */
     appendElement: false,
     operation: "",
-    arguments: [],
+    elements: [],
     arrayOfElements: [],
     unmountAddArg: [true, false],
     counter: 0,
@@ -85,7 +85,7 @@ export default class App extends React.Component<IProps, IState> {
 
   componentDidUpdate(prevProps: IProps, prevState: IState, snapshot: any) {
     if (this.state.appendElement) {
-      let arguments_ = this.state.arguments;
+      let elements_ = this.state.elements;
       let counter_ = this.state.counter;
       let arrayOfElements = this.state.arrayOfElements;
       let unmountAddArg_ = this.state.unmountAddArg;
@@ -93,11 +93,11 @@ export default class App extends React.Component<IProps, IState> {
       if (counter_ === 0) unmountAddArg_[0] = false;
       else unmountAddArg_[1] = true;
 
-      arguments_.push(arrayOfElements);
+      elements_.push(arrayOfElements);
 
       this.setState({ unmountAddArg: unmountAddArg_ });
       this.setState({ counter: counter_ + 1 });
-      this.setState({ arguments: arguments_ });
+      this.setState({ elements: elements_ });
       this.setState({ appendElement: false });
     }
     if (this.state.updateMenu) {
@@ -105,6 +105,13 @@ export default class App extends React.Component<IProps, IState> {
       this.setState({ updateMenu: false });
     }
     if (this.state.updateArguments) {
+      let arguments_ = this.state.argumentsList.toArray();
+
+      for (let index = 0; index < arguments_.length; index++) {
+        const element = JSON.parse(JSON.stringify(arguments_[index]));
+        console.log("ele " + element);
+      }
+
       this.setState({ updateArguments: !this.state.updateArguments });
     }
   }
@@ -128,13 +135,15 @@ export default class App extends React.Component<IProps, IState> {
   setSelectedValue(e: React.FormEvent<HTMLSelectElement>) {
     const val = e.currentTarget.value;
     let id = e.currentTarget.id;
+    var flag = false;
 
     // Read all of the values of the arguments
-    let arrayOfArguments = this.arrayOfArguments();
+    let arrayOfElements = this.arrayOfElements();
+    let arguments_ = this.state.argumentsList;
     //console.log("id " + val.id);
 
-    for (let index = 0; index < arrayOfArguments.length; index++) {
-      const element = arrayOfArguments[index];
+    for (let index = 0; index < arrayOfElements.length; index++) {
+      const element = arrayOfElements[index];
       const getValues = (element: Element) => {
         const element_ = JSON.parse(JSON.stringify(element))[0];
         const id = element_.props.id;
@@ -142,7 +151,8 @@ export default class App extends React.Component<IProps, IState> {
       };
 
       getValues(element);
-      const res = this.state.argumentsList.toArray().find(function (e) {
+
+      const res = arguments_.toArray().find(function (e) {
         return e.id === id;
       });
 
@@ -151,15 +161,22 @@ export default class App extends React.Component<IProps, IState> {
           id: id,
           value: { text: res.value.text, select: Boolean(val) }
         };
-
-        arrayOfArguments[parseInt(id, 0)] = newRes;
-        this.setState({ arguments: arrayOfArguments });
+        arguments_.append(newRes, false);
+        flag = true;
       }
-      // const is
     }
 
+    if (!flag) {
+      let newRes = {
+        id: id,
+        value: { text: undefined, select: Boolean(val) }
+      };
 
-    //  this.setState({ operation: val.label });
+      arguments_.append(newRes, false);
+      this.setState({ argumentsList: arguments_ });
+    }
+
+    this.setState({ updateArguments: !this.state.updateArguments });
   }
 
   // Call this function every time myArg or an operator is selected
@@ -315,9 +332,9 @@ export default class App extends React.Component<IProps, IState> {
 
   /* ----------------------- */
 
-  arrayOfArguments() {
-    var arguments_ = this.state.arguments;
-    return arguments_.map((element) => element);
+  arrayOfElements() {
+    var elements_ = this.state.elements;
+    return elements_.map((element) => element);
   }
 
   render() {
@@ -360,7 +377,7 @@ export default class App extends React.Component<IProps, IState> {
           )}
         </div>
 
-        {this.arrayOfArguments()}
+        {this.arrayOfElements()}
         {this.createButton()}
 
         <div style={{ transform: "translateY(30px)" }}>
