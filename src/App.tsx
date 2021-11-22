@@ -26,6 +26,7 @@ interface IState {
   argumentsList: LinkedList<number>;
   value: string;
   id: string;
+  keyCounter: number;
 
   /* For operatons */
   updateMenu: boolean;
@@ -76,8 +77,8 @@ export default class App extends React.Component<IProps, IState> {
     argumentsList: new LinkedList<number>(),
     value: '',
     id: "0",
+    keyCounter: 0,
     
-
     /* For operatons */
 
     selectedArgumentOption: 5,
@@ -93,6 +94,12 @@ export default class App extends React.Component<IProps, IState> {
     tempMenu: this.createMenu(),
     updateMenu: false
   };
+
+  componentDidMount()
+  {
+    if(this.state.keyCounter !== localStorage.length)
+      localStorage.clear();
+  }
 
   componentDidUpdate(prevProps: IProps, prevState: IState, snapshot: any) {
     if (this.state.appendElement) {
@@ -118,13 +125,16 @@ export default class App extends React.Component<IProps, IState> {
     if (this.state.updateArguments) {
 
       const id = this.state.id;
-      console.log(id);
+      const val = this.state.value;
+      
       let flag = false;
 
       // Read all of the values of the arguments
       for (let i = 0; i < localStorage.length; i++) {
         const key: any = localStorage.key(i);
+        //console.log(key);
         if ((key !== null || key !== undefined) && key === id) {
+          
           // Replace values
           let item = localStorage.getItem(key);
           const json = JSON.parse(JSON.stringify(item));
@@ -155,10 +165,10 @@ export default class App extends React.Component<IProps, IState> {
 
         localStorage.setItem(id, JSON.stringify(newRes));
       }
-
+      console.log("--->  " + localStorage.length);
       for (var i = 0; i < localStorage.length; i++) {
         const item = localStorage.getItem(i.toString());
-        //     console.log("i " + item);
+       //  console.log("--->  " + item);
       }
 
       this.setState({ updateArguments: !this.state.updateArguments });
@@ -170,7 +180,8 @@ export default class App extends React.Component<IProps, IState> {
       this.state.appendElement !== nextState.appendElement ||
       this.state.updateMenu !== nextState.updateMenu ||
       this.state.updateArguments !== nextState.updateArguments ||
-      this.state.id !== nextState.id
+      this.state.id !== nextState.id ||
+      this.state.keyCounter !== nextState.keyCounter
     ) {
       return true;
     }
@@ -184,6 +195,7 @@ export default class App extends React.Component<IProps, IState> {
 
   setSelectedValue(e: React.FormEvent<HTMLSelectElement>) {
     const val = e.currentTarget.value;
+    this.setState({value: val});
     this.setState({ updateArguments: !this.state.updateArguments });
   }
 
@@ -227,6 +239,7 @@ export default class App extends React.Component<IProps, IState> {
 
     const finalID = (id_ + 1).toString();
     this.setState({ id: finalID });
+    this.setState({ keyCounter: this.state.keyCounter + 1 });
 
     const html = (
       <div id={finalID} style={{ display: "inline-block" }}>
@@ -420,4 +433,5 @@ export default class App extends React.Component<IProps, IState> {
     );
   }
 }
+
 
