@@ -4,7 +4,11 @@ import { LinkedList } from "linked-list-typescript";
 type Args = { [argname: string]: boolean };
 type Operation = any;
 type OptionType = { id: string; label: string; value: string };
-type ArgType = { id: string; value: { text: any; select: boolean } };
+type ArgType = {
+  id: string;
+  found: boolean;
+  value: { text: any; select: string };
+};
 type ArgTypeOp = [{ label: string; value: number }];
 
 interface IProps {}
@@ -18,7 +22,9 @@ interface IState {
   unmountAddArg: boolean[];
   counter: number;
   updateArguments: boolean;
-  argumentsList: LinkedList<ArgType>;
+  argumentsArr: ArgType[];
+  argumentsList: LinkedList<number>;
+  edit: number;
 
   /* For operatons */
   updateMenu: boolean;
@@ -65,7 +71,9 @@ export default class App extends React.Component<IProps, IState> {
     unmountAddArg: [true, false],
     counter: 0,
     updateArguments: false,
-    argumentsList: new LinkedList<ArgType>(),
+    argumentsArr: [],
+    argumentsList: new LinkedList<number>(),
+    edit: 0,
 
     /* For operatons */
 
@@ -107,9 +115,9 @@ export default class App extends React.Component<IProps, IState> {
     if (this.state.updateArguments) {
       let arguments_ = this.state.argumentsList.toArray();
 
-      for (let index = 0; index < arguments_.length; index++) {
-        const element = JSON.parse(JSON.stringify(arguments_[index]));
-        console.log("ele " + element);
+      for (var i = 0; i < localStorage.length; i++) {
+        const item = localStorage.getItem(i.toString());
+        console.log(item);
       }
 
       this.setState({ updateArguments: !this.state.updateArguments });
@@ -120,7 +128,8 @@ export default class App extends React.Component<IProps, IState> {
     if (
       this.state.appendElement !== nextState.appendElement ||
       this.state.updateMenu !== nextState.updateMenu ||
-      this.state.updateArguments !== nextState.updateArguments
+      this.state.updateArguments !== nextState.updateArguments ||
+      this.state.edit !== nextState.edit
     ) {
       return true;
     }
@@ -135,13 +144,14 @@ export default class App extends React.Component<IProps, IState> {
   setSelectedValue(e: React.FormEvent<HTMLSelectElement>) {
     const val = e.currentTarget.value;
     let id = e.currentTarget.id;
-    var flag = false;
-
+    let flag = false;
     // Read all of the values of the arguments
     let arrayOfElements = this.arrayOfElements();
-    let arguments_ = this.state.argumentsList;
+    let argumentsList_ = this.state.argumentsList;
+    let argumentsArr_ = this.state.argumentsArr;
     //console.log("id " + val.id);
 
+    // For testing
     for (let index = 0; index < arrayOfElements.length; index++) {
       const element = arrayOfElements[index];
       const getValues = (element: Element) => {
@@ -151,29 +161,35 @@ export default class App extends React.Component<IProps, IState> {
       };
 
       getValues(element);
-
-      const res = arguments_.toArray().find(function (e) {
-        return e.id === id;
-      });
-
-      if (res !== undefined) {
+    }
+    for (let i = 0; i < localStorage.length; i++) {
+      const key: any = localStorage.key(i);
+      if ((key !== null || key !== undefined) && key === id) {
+        // Replace values
+        let item = localStorage.getItem(key);
+        const json = JSON.parse(JSON.stringify(item));
         let newRes = {
           id: id,
-          value: { text: res.value.text, select: Boolean(val) }
+          found: true,
+          value: { text: json.value.text || undefined, select: val }
         };
-        arguments_.append(newRes, false);
+
+        localStorage.removeItem(id);
+        localStorage.setItem(id, JSON.stringify(newRes));
         flag = true;
+        break;
       }
     }
 
     if (!flag) {
+      // New entry
       let newRes = {
         id: id,
-        value: { text: undefined, select: Boolean(val) }
+        found: true,
+        value: { text: undefined, select: val }
       };
 
-      arguments_.append(newRes, false);
-      this.setState({ argumentsList: arguments_ });
+      localStorage.setItem(id, JSON.stringify(newRes));
     }
 
     this.setState({ updateArguments: !this.state.updateArguments });
