@@ -22,7 +22,7 @@ interface IState {
   unmountAddArg: boolean[];
   counter: number;
   updateArguments: boolean;
-  argumentsArr: ArgType[];
+  argumentsArr: any[];
   argumentsList: LinkedList<number>;
   value: string;
   idArr: string[];
@@ -106,7 +106,7 @@ export default class App extends React.Component<IProps, IState> {
     let newRes = {
       id: "0",
       found: true,
-      value: { text: "", select: "" }
+      value: { text: "undefined", select: "undefined" }
     };
 
     localStorage.setItem("0", JSON.stringify(newRes));
@@ -186,7 +186,7 @@ export default class App extends React.Component<IProps, IState> {
           found: true,
           value:
             json.value === undefined
-              ? { text: "", select: val }
+              ? { text: "undefined", select: val }
               : { text: json.value.text, select: val }
         };
 
@@ -201,7 +201,7 @@ export default class App extends React.Component<IProps, IState> {
       let newRes = {
         id: id,
         found: true,
-        value: { text: "", select: val }
+        value: { text: "undefined", select: val }
       };
       localStorage.setItem(id, JSON.stringify(newRes));
     }
@@ -231,9 +231,9 @@ export default class App extends React.Component<IProps, IState> {
   OperationBuilder(e: React.FormEvent<HTMLSelectElement>) {
     const val = e.currentTarget.value;
 
-   switch (val) {
+    switch (val) {
       case "arguments":
-        this.MenuInterface(1)
+        this.MenuInterface(1);
         break;
       case "constant":
         break;
@@ -247,9 +247,8 @@ export default class App extends React.Component<IProps, IState> {
     var arguments_ = this.state.argumentsArr;
 
     for (var i = 0; i < localStorage.length; i++) {
-      let item = JSON.parse(JSON.stringify(localStorage.getItem(i.toString())));
-
-      arguments_[i] = item.value;
+      // console.log("item " + item);
+      arguments_[i] = localStorage.getItem(i.toString());
     }
     this.setState({ argumentsArr: arguments_ });
   }
@@ -284,7 +283,6 @@ export default class App extends React.Component<IProps, IState> {
         <button
           type="button"
           onClick={() => {
-            
             this.MenuInterface(0);
           }}
         >
@@ -297,9 +295,7 @@ export default class App extends React.Component<IProps, IState> {
   }
 
   createArgumentsMenu(): JSX.Element {
-    var arguments_ = this.state.argumentsArr;
-    console.log('length ' + arguments_.length);
-
+    var arguments_ = JSON.parse(JSON.stringify(this.state.argumentsArr));
     const args = (
       <div
         style={{
@@ -308,10 +304,11 @@ export default class App extends React.Component<IProps, IState> {
         }}
       >
         <select name="arguments">
-          {arguments_.map((_arguments) => 
-            <option value="arguments">_arguments</option>
-          )}
-        </select>
+        {arguments_.map((_arguments: any) => {
+            const val = JSON.parse(_arguments).value.select;
+            return <option value="arguments">{val}</option>
+        })}
+          </select>
       </div>
     );
 
@@ -376,7 +373,7 @@ export default class App extends React.Component<IProps, IState> {
     let newRes = {
       id: finalID,
       found: true,
-      value: { text: "", select: "" }
+      value: { text: "undefined", select: "undefined" }
     };
 
     localStorage.setItem(finalID, JSON.stringify(newRes));
