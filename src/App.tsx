@@ -163,6 +163,52 @@ export default class App extends React.Component<IProps, IState> {
       given some args */
   }
 
+  setTextValue(e: React.FormEvent<HTMLSelectElement>) {
+    let val = e.currentTarget.value;
+    let id = e.currentTarget.id;
+
+    this.setState({ value: val });
+
+    //console.log("coun " + id);
+    let flag = false;
+
+    // Read all of the values of the arguments
+    for (let i = 0; i < localStorage.length; i++) {
+      const key: any = localStorage.key(i);
+      //console.log(key);
+      if (key === id) {
+        // Replace values
+        let item = localStorage.getItem(key);
+        const json = JSON.parse(JSON.stringify(item));
+        const val = JSON.parse(json).value;
+        let newRes = {
+          id: id,
+          found: true,
+          value:
+            val.select === undefined
+              ? { text: val , select: "undefined" }
+              : { text: val, select: val.select }
+        };
+
+        localStorage.setItem(id, JSON.stringify(newRes));
+        flag = true;
+        break;
+      }
+    }
+
+    if (!flag) {
+      // New entry
+      let newRes = {
+        id: id,
+        found: true,
+        value: { text: val, select: "undefined" }
+      };
+      localStorage.setItem(id, JSON.stringify(newRes));
+    }
+
+    this.setState({ updateArguments: !this.state.updateArguments });
+  }
+
   setSelectedValue(e: React.FormEvent<HTMLSelectElement>) {
     let val = e.currentTarget.value;
     let id = e.currentTarget.id;
@@ -180,14 +226,14 @@ export default class App extends React.Component<IProps, IState> {
         // Replace values
         let item = localStorage.getItem(key);
         const json = JSON.parse(JSON.stringify(item));
-
+        const val = JSON.parse(json).value;
         let newRes = {
           id: id,
           found: true,
           value:
-            json.value === undefined
+            val.text === undefined
               ? { text: "undefined", select: val }
-              : { text: json.value.text, select: val }
+              : { text: val.text, select: val }
         };
 
         localStorage.setItem(id, JSON.stringify(newRes));
@@ -324,11 +370,11 @@ export default class App extends React.Component<IProps, IState> {
         }}
       >
         {!this.state.hideMenu && (
-          <select onChange={this.OperationBuilder}>
+          <select onChange={this.OperationBuilder} >
             <option value="none" selected disabled hidden>
               Select...
             </option>
-            <option value="arguments">Arguments</option>
+            <option value="arguments" >Arguments</option>
             <option value="constant">Constant</option>
           </select>
         )}
@@ -509,6 +555,5 @@ export default class App extends React.Component<IProps, IState> {
     );
   }
 }
-
 
 
