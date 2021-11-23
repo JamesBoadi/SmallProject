@@ -35,6 +35,7 @@ interface IState {
   selectedArgumentOption: number;
   menu: JSX.Element;
   tempMenu: JSX.Element;
+  hideMenu: boolean;
 }
 
 interface Array<OptionType> {
@@ -61,7 +62,10 @@ const menu = [
 export default class App extends React.Component<IProps, IState> {
   constructor(props: any) {
     super(props);
+    this.MenuInterface = this.MenuInterface.bind(this);
     this.setSelectedValue = this.setSelectedValue.bind(this);
+    this.OperationBuilder = this.OperationBuilder.bind(this);
+    this.createDefaultMenu = this.createDefaultMenu.bind(this);
   }
 
   state: IState = {
@@ -90,9 +94,9 @@ export default class App extends React.Component<IProps, IState> {
     // And Operator
 
     // Not Operator
-
-    menu: this.createDefaultMenu(),
-    tempMenu: this.createDefaultMenu(),
+    hideMenu: false,
+    menu: <></>,
+    tempMenu: <></>,
     updateMenu: false
   };
 
@@ -106,6 +110,7 @@ export default class App extends React.Component<IProps, IState> {
     };
 
     localStorage.setItem("0", JSON.stringify(newRes));
+    this.storeArguments();
   }
 
   componentDidUpdate(prevProps: IProps, prevState: IState, snapshot: any) {
@@ -126,7 +131,8 @@ export default class App extends React.Component<IProps, IState> {
       this.setState({ appendElement: false });
     }
     if (this.state.updateMenu) {
-      this.setState({ menu: this.state.tempMenu });
+      let arr = this.state.tempMenu;
+      this.setState({ menu: arr });
       this.setState({ updateMenu: false });
     }
     if (this.state.updateArguments) {
@@ -144,7 +150,8 @@ export default class App extends React.Component<IProps, IState> {
       this.state.id !== nextState.id ||
       this.state.idArr.length !== nextState.idArr.length ||
       this.state.keyCounter !== nextState.keyCounter ||
-      this.state.argumentsArr.length !== nextState.argumentsArr.length
+      this.state.argumentsArr.length !== nextState.argumentsArr.length ||
+      this.state.hideMenu !== nextState.hideMenu
     ) {
       return true;
     }
@@ -162,7 +169,7 @@ export default class App extends React.Component<IProps, IState> {
 
     this.setState({ value: val });
 
-    console.log("coun " + id);
+    //console.log("coun " + id);
     let flag = false;
 
     // Read all of the values of the arguments
@@ -219,15 +226,19 @@ export default class App extends React.Component<IProps, IState> {
 
   /* ----- For Operations ----- */
 
-  OperationBuilder(e: React.FormEvent<HTMLSelectElement>): void {
+  OperationsEvaluator(): void {}
+
+  OperationBuilder(e: React.FormEvent<HTMLSelectElement>) {
     const val = e.currentTarget.value;
-    // Render a new element based on what was selected
-    switch (val) {
-      case "Arguments":
-        this.MenuInterface(0);
+
+   switch (val) {
+      case "arguments":
+        this.MenuInterface(1)
         break;
-      case "Constant":
-        this.MenuInterface(1);
+      case "constant":
+        break;
+
+      default:
         break;
     }
   }
@@ -236,71 +247,11 @@ export default class App extends React.Component<IProps, IState> {
     var arguments_ = this.state.argumentsArr;
 
     for (var i = 0; i < localStorage.length; i++) {
-      const item = JSON.parse(
-        JSON.stringify(localStorage.getItem(i.toString()))
-      );
-      arguments_[i] = item.value.text;
+      let item = JSON.parse(JSON.stringify(localStorage.getItem(i.toString())));
+
+      arguments_[i] = item.value;
     }
-
     this.setState({ argumentsArr: arguments_ });
-  }
-
-  resetButton() {
-    const resetButton = (
-      <div style={{ position: "relative", display: "inline-block" }}>
-        <button
-          type="button"
-          onClick={() => {
-            this.MenuInterface(0);
-          }}
-        >
-          Reset
-        </button>
-      </div>
-    );
-
-    return resetButton;
-  }
-
-  createArgumentsMenu() {
-    var arguments_ = this.state.argumentsArr;
-
-    const args = (
-      <div
-        style={{
-          width: "15ex",
-          float: "left"
-        }}
-      >
-        <select name="arguments" onChange={this.setSelectedValue}>
-          {arguments_.map((_arguments) => {
-            return <option value="arguments">_arguments</option>;
-          })}
-        </select>
-      </div>
-    );
-
-    return args;
-  }
-
-  createDefaultMenu() {
-    const select = (
-      <div
-        style={{
-          width: "15ex",
-          float: "left"
-        }}
-      >
-        <select onChange={this.setSelectedValue}>
-          <option value="none" selected disabled hidden>
-            Select...
-          </option>
-          <option value="arguments">Arguments</option>
-        </select>
-      </div>
-    );
-
-    return select;
   }
 
   MenuInterface(key: number) {
@@ -321,9 +272,74 @@ export default class App extends React.Component<IProps, IState> {
         this.setState({ tempMenu: this.createDefaultMenu() });
         break;
     }
+
+    this.setState({ updateMenu: true });
   }
 
   /* ----- JSX Elements ----- */
+
+  resetButton(): JSX.Element {
+    const resetButton = (
+      <div style={{ position: "relative", display: "inline-block" }}>
+        <button
+          type="button"
+          onClick={() => {
+            
+            this.MenuInterface(0);
+          }}
+        >
+          Reset
+        </button>
+      </div>
+    );
+
+    return resetButton;
+  }
+
+  createArgumentsMenu(): JSX.Element {
+    var arguments_ = this.state.argumentsArr;
+    console.log('length ' + arguments_.length);
+
+    const args = (
+      <div
+        style={{
+          width: "15ex",
+          float: "left"
+        }}
+      >
+        <select name="arguments">
+          {arguments_.map((_arguments) => 
+            <option value="arguments">_arguments</option>
+          )}
+        </select>
+      </div>
+    );
+
+    return args;
+  }
+
+  createDefaultMenu(): JSX.Element {
+    const select = (
+      <div
+        style={{
+          width: "15ex",
+          float: "left"
+        }}
+      >
+        {!this.state.hideMenu && (
+          <select onChange={this.OperationBuilder}>
+            <option value="none" selected disabled hidden>
+              Select...
+            </option>
+            <option value="arguments">Arguments</option>
+            <option value="constant">Constant</option>
+          </select>
+        )}
+      </div>
+    );
+
+    return select;
+  }
 
   addArgument(): JSX.Element[] {
     var array: JSX.Element[] = [];
@@ -364,6 +380,8 @@ export default class App extends React.Component<IProps, IState> {
     };
 
     localStorage.setItem(finalID, JSON.stringify(newRes));
+
+    this.storeArguments();
 
     const html = (
       <div id={finalID} style={{ display: "inline-block" }}>
@@ -434,9 +452,7 @@ export default class App extends React.Component<IProps, IState> {
 
     return button;
   }
-
   /* ---------------------- */
-
   /* ----------------------- */
 
   arrayOfElements() {
@@ -488,6 +504,7 @@ export default class App extends React.Component<IProps, IState> {
         {this.createButton()}
 
         <div style={{ transform: "translateY(30px)" }}>
+          {this.createDefaultMenu()}
           {this.state.menu}
           {this.resetButton()}
         </div>
