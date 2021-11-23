@@ -62,7 +62,6 @@ export default class App extends React.Component<IProps, IState> {
   constructor(props: any) {
     super(props);
     this.setSelectedValue = this.setSelectedValue.bind(this);
-    this.setSelectedMenuValue = this.setSelectedMenuValue.bind(this);
   }
 
   state: IState = {
@@ -92,13 +91,21 @@ export default class App extends React.Component<IProps, IState> {
 
     // Not Operator
 
-    menu: this.createMenu(),
-    tempMenu: this.createMenu(),
+    menu: this.createDefaultMenu(),
+    tempMenu: this.createDefaultMenu(),
     updateMenu: false
   };
 
   componentDidMount() {
     if (localStorage.length !== this.state.keyCounter) localStorage.clear();
+
+    let newRes = {
+      id: "0",
+      found: true,
+      value: { text: "", select: "" }
+    };
+
+    localStorage.setItem("0", JSON.stringify(newRes));
   }
 
   componentDidUpdate(prevProps: IProps, prevState: IState, snapshot: any) {
@@ -196,7 +203,7 @@ export default class App extends React.Component<IProps, IState> {
   }
 
   // Call this function every time myArg or an operator is selected
-  OperationBuilder(key: number): JSX.Element[] {
+  ArgumentsBuilder(key: number): JSX.Element[] {
     // Render a new element based on what was selected
     switch (key) {
       case 1:
@@ -210,6 +217,114 @@ export default class App extends React.Component<IProps, IState> {
     return this.addArgument();
   }
 
+  /* ----- For Operations ----- */
+
+  OperationBuilder(e: React.FormEvent<HTMLSelectElement>): void {
+    const val = e.currentTarget.value;
+    // Render a new element based on what was selected
+    switch (val) {
+      case "Arguments":
+        this.MenuInterface(0);
+        break;
+      case "Constant":
+        this.MenuInterface(1);
+        break;
+    }
+  }
+
+  storeArguments(): void {
+    var arguments_ = this.state.argumentsArr;
+
+    for (var i = 0; i < localStorage.length; i++) {
+      const item = JSON.parse(
+        JSON.stringify(localStorage.getItem(i.toString()))
+      );
+      arguments_[i] = item.value.text;
+    }
+
+    this.setState({ argumentsArr: arguments_ });
+  }
+
+  resetButton() {
+    const resetButton = (
+      <div style={{ position: "relative", display: "inline-block" }}>
+        <button
+          type="button"
+          onClick={() => {
+            this.MenuInterface(0);
+          }}
+        >
+          Reset
+        </button>
+      </div>
+    );
+
+    return resetButton;
+  }
+
+  createArgumentsMenu() {
+    var arguments_ = this.state.argumentsArr;
+
+    const args = (
+      <div
+        style={{
+          width: "15ex",
+          float: "left"
+        }}
+      >
+        <select name="arguments" onChange={this.setSelectedValue}>
+          {arguments_.map((_arguments) => {
+            return <option value="arguments">_arguments</option>;
+          })}
+        </select>
+      </div>
+    );
+
+    return args;
+  }
+
+  createDefaultMenu() {
+    const select = (
+      <div
+        style={{
+          width: "15ex",
+          float: "left"
+        }}
+      >
+        <select onChange={this.setSelectedValue}>
+          <option value="none" selected disabled hidden>
+            Select...
+          </option>
+          <option value="arguments">Arguments</option>
+        </select>
+      </div>
+    );
+
+    return select;
+  }
+
+  MenuInterface(key: number) {
+    switch (key) {
+      case 1:
+        this.setState({ tempMenu: this.createArgumentsMenu() });
+        break;
+      case 2:
+        break;
+      case 3:
+        break;
+      case 4:
+        break;
+      case 5:
+        break;
+
+      default:
+        this.setState({ tempMenu: this.createDefaultMenu() });
+        break;
+    }
+  }
+
+  /* ----- JSX Elements ----- */
+
   addArgument(): JSX.Element[] {
     var array: JSX.Element[] = [];
     const select = this.createSelect();
@@ -217,7 +332,7 @@ export default class App extends React.Component<IProps, IState> {
 
     let arrayOfElements = this.arrayOfElements();
     let min = Number.MIN_VALUE;
-    let id_ = 1;
+    let id_ = 0;
     let idArr = this.state.idArr;
 
     for (let index = 0; index < arrayOfElements.length; index++) {
@@ -232,7 +347,7 @@ export default class App extends React.Component<IProps, IState> {
       min = getValues(element) > min ? getValues(element) : min;
     }
 
-    if (id_ === Number.MIN_VALUE) id_ = 1;
+    if (id_ === Number.MIN_VALUE) id_ = 0;
 
     const finalID = (id_ + 1).toString();
     idArr[parseInt(finalID, 0)] = finalID;
@@ -240,6 +355,15 @@ export default class App extends React.Component<IProps, IState> {
     this.setState({ id: finalID });
     this.setState({ idArr: idArr });
     this.setState({ keyCounter: this.state.keyCounter + 1 });
+
+    // Create New Entry
+    let newRes = {
+      id: finalID,
+      found: true,
+      value: { text: "", select: "" }
+    };
+
+    localStorage.setItem(finalID, JSON.stringify(newRes));
 
     const html = (
       <div id={finalID} style={{ display: "inline-block" }}>
@@ -289,7 +413,7 @@ export default class App extends React.Component<IProps, IState> {
               id={"0"}
               type="button"
               onClick={() => {
-                const arrayOfElements = this.OperationBuilder(0);
+                const arrayOfElements = this.ArgumentsBuilder(0);
 
                 this.setState(
                   {
@@ -311,102 +435,7 @@ export default class App extends React.Component<IProps, IState> {
     return button;
   }
 
-  /* ----- For Operations ----- */
-
-  storeArguments() {
-    var arguments_ = this.state.argumentsArr;
-
-    for (var i = 0; i < localStorage.length; i++) {
-      const item = JSON.parse(
-        JSON.stringify(localStorage.getItem(i.toString()))
-      );
-      arguments_[i] = item.value.text;
-    }
-
-    this.setState({ argumentsArr: arguments_ });
-  }
-
-  setSelectedMenuValue(
-    value: ArgArray<ArgTypeOp>
-    //meta: ActionMeta<ArgTypeOp>
-  ) {
-    const val = JSON.parse(JSON.stringify(value));
-    this.setState({ selectedArgumentOption: val.label });
-
-    this.setState({ menu: this.state.tempMenu });
-
-    this.setState({ updateMenu: true });
-  }
-
-  resetButton() {
-    const resetButton = (
-      <div style={{ position: "relative", display: "inline-block" }}>
-        <button type="button" onClick={() => {}}>
-          Reset
-        </button>
-      </div>
-    );
-
-    return resetButton;
-  }
-
-  argumentsMenu() {
-    var arguments_ = this.state.argumentsArr;
-
-    const args = (
-      <div
-        style={{
-          width: "15ex",
-          float: "left"
-        }}
-      >
-        <select name="arguments" onChange={this.setSelectedValue}>
-          {arguments_.map((_arguments) => (
-            <option value="arguments">_arguments</option>
-          ))}
-        </select>
-      </div>
-    );
-
-    return args;
-  }
-
-  createMenu() {
-    const select = (
-      <div
-        style={{
-          width: "15ex",
-          float: "left"
-        }}
-      >
-        <select name="cars" id="cars" onChange={this.setSelectedValue}>
-          <option value="arguments">Arguments</option>
-        </select>
-      </div>
-    );
-
-    return select;
-  }
-
-  menuInterface(key: number) {
-    switch (key) {
-      case 0:
-        this.setState({ tempMenu: this.argumentsMenu() });
-        break;
-      case 1:
-        break;
-      case 2:
-        break;
-      case 3:
-        break;
-      case 4:
-        break;
-
-      default:
-        this.setState({ tempMenu: this.createMenu() });
-        break;
-    }
-  }
+  /* ---------------------- */
 
   /* ----------------------- */
 
@@ -436,7 +465,7 @@ export default class App extends React.Component<IProps, IState> {
             <button
               type="button"
               onClick={() => {
-                const arrayOfElements = this.OperationBuilder(0);
+                const arrayOfElements = this.ArgumentsBuilder(0);
                 this.setState(
                   {
                     arrayOfElements: arrayOfElements
@@ -466,3 +495,4 @@ export default class App extends React.Component<IProps, IState> {
     );
   }
 }
+
