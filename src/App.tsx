@@ -323,13 +323,7 @@ export default class App extends React.Component<IProps, IState> {
       arguments_[i] = item.value.text;
     }
 
-    this.setState({argumentsArr: arguments_});
-  }
-
-  renderArguments()
-  {
-    var arguments_ = this.state.argumentsArr;
-    return arguments_.map((arguments_) => arguments_);
+    this.setState({ argumentsArr: arguments_ });
   }
 
   setSelectedMenuValue(
@@ -356,6 +350,27 @@ export default class App extends React.Component<IProps, IState> {
     return resetButton;
   }
 
+  argumentsMenu() {
+    var arguments_ = this.state.argumentsArr;
+
+    const args = (
+      <div
+        style={{
+          width: "15ex",
+          float: "left"
+        }}
+      >
+        <select name="arguments" onChange={this.setSelectedValue}>
+          {arguments_.map((_arguments) => (
+            <option value="arguments">_arguments</option>
+          ))}
+        </select>
+      </div>
+    );
+
+    return args;
+  }
+
   createMenu() {
     const select = (
       <div
@@ -376,6 +391,7 @@ export default class App extends React.Component<IProps, IState> {
   menuInterface(key: number) {
     switch (key) {
       case 0:
+        this.setState({ tempMenu: this.argumentsMenu() });
         break;
       case 1:
         break;
