@@ -30,6 +30,7 @@ interface IState {
   keyCounter: number;
 
   /* For operatons */
+  arrayOfOperators: JSX.Element[];
   updateMenu: boolean;
   listOfArguments_op: ArgTypeOp;
   selectedArgumentOption: number;
@@ -95,6 +96,8 @@ export default class App extends React.Component<IProps, IState> {
     /* -------------- */
     /* For operatons */
     /* -------------- */
+
+    arrayOfOperators: [],
 
     selectedArgumentOption: 5,
 
@@ -304,7 +307,9 @@ export default class App extends React.Component<IProps, IState> {
     return this.addArgument();
   }
 
+   /* -------------------------- */
   /* ----- For Operations ----- */
+  /* -------------------------- */
 
   OperationsEvaluator(): void {}
 
@@ -322,16 +327,6 @@ export default class App extends React.Component<IProps, IState> {
       default:
         break;
     }
-  }
-
-  storeArguments(): void {
-    var arguments_ = this.state.argumentsArr;
-
-    for (var i = 0; i < localStorage.length; i++) {
-      // console.log("item " + item);
-      arguments_[i] = localStorage.getItem(i.toString());
-    }
-    this.setState({ argumentsArr: arguments_ });
   }
 
   MenuInterface(key: number) {
@@ -380,7 +375,31 @@ export default class App extends React.Component<IProps, IState> {
     this.setState({ updateResult: true });
   }
 
-  /* ----- Elements Menu  ----- */
+  
+  storeArguments(): void {
+    var arguments_ = this.state.argumentsArr;
+
+    for (var i = 0; i < localStorage.length; i++) {
+      // console.log("item " + item);
+      arguments_[i] = localStorage.getItem(i.toString());
+    }
+    this.setState({ argumentsArr: arguments_ });
+  }
+
+  /* ----------------------------- */
+  /* ----- Menu JSX Elements ----- */
+  /* ----------------------------- */
+
+  createArgumentParameters(): JSX.Element[]
+  {
+    var array: JSX.Element[] = [];
+  
+    
+
+
+
+
+  }
 
   createConstantMenu(): JSX.Element {
     const select = (
@@ -416,8 +435,6 @@ export default class App extends React.Component<IProps, IState> {
       </div>
     );
 
-    // Call Operations Builder
-
     return args;
   }
 
@@ -436,6 +453,7 @@ export default class App extends React.Component<IProps, IState> {
             </option>
             <option value="arguments">Arguments</option>
             <option value="constant">Constant</option>
+            <option value="not-operator">Not</option>
           </select>
         )}
       </div>
@@ -444,7 +462,29 @@ export default class App extends React.Component<IProps, IState> {
     return select;
   }
 
+  /* ------------------------ */
   /* ----- JSX Elements ----- */
+  /* ------------------------ */
+
+  addOperatorButton(): JSX.Element {
+    
+    
+    const addOperatorButton = (
+      <div style={{ position: "relative", display: "inline-block" }}>
+        <button
+          type="button"
+          onClick={() => {
+            this.MenuInterface(0);
+          }}
+        >
+          Reset
+        </button>
+      </div>
+    );
+
+    return addOperatorButton;
+  }
+
 
   resetButton(): JSX.Element {
     const resetButton = (
@@ -658,5 +698,4 @@ export default class App extends React.Component<IProps, IState> {
     );
   }
 }
-
 
