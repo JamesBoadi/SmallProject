@@ -36,6 +36,8 @@ interface IState {
   menu: JSX.Element;
   tempMenu: JSX.Element;
   hideMenu: boolean;
+
+  operationResult: boolean;
 }
 
 interface Array<OptionType> {
@@ -67,6 +69,7 @@ export default class App extends React.Component<IProps, IState> {
     this.setTextValue = this.setTextValue.bind(this);
     this.OperationBuilder = this.OperationBuilder.bind(this);
     this.createDefaultMenu = this.createDefaultMenu.bind(this);
+    this.getArgumentsValue = this.getArgumentsValue.bind(this);
   }
 
   state: IState = {
@@ -85,7 +88,9 @@ export default class App extends React.Component<IProps, IState> {
     id: 0,
     keyCounter: 0,
 
+    /* -------------- */
     /* For operatons */
+    /* -------------- */
 
     selectedArgumentOption: 5,
 
@@ -98,7 +103,9 @@ export default class App extends React.Component<IProps, IState> {
     hideMenu: false,
     menu: <></>,
     tempMenu: <></>,
-    updateMenu: false
+    updateMenu: false,
+
+    operationResult: false
   };
 
   componentDidMount() {
@@ -327,24 +334,16 @@ export default class App extends React.Component<IProps, IState> {
     this.setState({ updateMenu: true });
   }
 
-  /* ----- JSX Elements ----- */
+  getArgumentsValue(e: React.FormEvent<HTMLSelectElement>) {
+    const val = e.currentTarget.value;
+    const json = JSON.parse(JSON.stringify(localStorage.getItem(val)));
+    const item = JSON.parse(json);
 
-  resetButton(): JSX.Element {
-    const resetButton = (
-      <div style={{ position: "relative", display: "inline-block" }}>
-        <button
-          type="button"
-          onClick={() => {
-            this.MenuInterface(0);
-          }}
-        >
-          Reset
-        </button>
-      </div>
-    );
 
-    return resetButton;
+    return item.value.select;
   }
+
+  /* ----- Elements Menu  ----- */
 
   createArgumentsMenu(): JSX.Element {
     var arguments_ = JSON.parse(JSON.stringify(this.state.argumentsArr));
@@ -356,10 +355,12 @@ export default class App extends React.Component<IProps, IState> {
           float: "left"
         }}
       >
-        <select name="arguments">
+        <select onChange={this.getArgumentsValue} name="arguments">
           {arguments_.map((_arguments: any) => {
-            const val = JSON.parse(_arguments).value.select;
-            return <option value="arguments">{val}</option>;
+            const id = JSON.parse(_arguments).id;
+            const val = JSON.parse(_arguments).value.text;
+            // Bug: id attri does not return a value, but value does
+            return <option value={id.toString()}>{val}</option>;
           })}
         </select>
       </div>
@@ -393,6 +394,25 @@ export default class App extends React.Component<IProps, IState> {
     return select;
   }
 
+  /* ----- JSX Elements ----- */
+
+  resetButton(): JSX.Element {
+    const resetButton = (
+      <div style={{ position: "relative", display: "inline-block" }}>
+        <button
+          type="button"
+          onClick={() => {
+            this.MenuInterface(0);
+          }}
+        >
+          Reset
+        </button>
+      </div>
+    );
+
+    return resetButton;
+  }
+
   addArgument(): JSX.Element[] {
     var array: JSX.Element[] = [];
     const select = this.createSelect();
@@ -416,7 +436,7 @@ export default class App extends React.Component<IProps, IState> {
     }
 
     if (id_ === Number.MIN_VALUE) id_ = 1;
-    const finalID = (id_ + 1);
+    const finalID = id_ + 1;
 
     idArr.push(finalID);
 
@@ -456,7 +476,12 @@ export default class App extends React.Component<IProps, IState> {
 
     const textfield = (
       <div style={{ float: "left", height: "70" }}>
-        <input type="text" size="5" id={id.toString()} onChange={this.setTextValue} />
+        <input
+          type="text"
+          size="5"
+          id={id.toString()}
+          onChange={this.setTextValue}
+        />
       </div>
     );
     return textfield;
@@ -471,7 +496,11 @@ export default class App extends React.Component<IProps, IState> {
 
     const select = (
       <div style={{ width: "15ex", display: "inline-block" }}>
-        <select name="boolean" id={id.toString()} onChange={this.setSelectedValue}>
+        <select
+          name="boolean"
+          id={id.toString()}
+          onChange={this.setSelectedValue}
+        >
           <option value="true">true</option>
           <option value="false">false</option>
         </select>
