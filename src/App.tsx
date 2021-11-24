@@ -37,7 +37,10 @@ interface IState {
   tempMenu: JSX.Element;
   hideMenu: boolean;
 
+  updateResult: boolean;
+  tempResult: boolean;
   operationResult: boolean;
+  currentOperation: any;
 }
 
 interface Array<OptionType> {
@@ -70,6 +73,7 @@ export default class App extends React.Component<IProps, IState> {
     this.OperationBuilder = this.OperationBuilder.bind(this);
     this.createDefaultMenu = this.createDefaultMenu.bind(this);
     this.getArgumentsValue = this.getArgumentsValue.bind(this);
+    this.getConstantValue = this.getConstantValue.bind(this);
   }
 
   state: IState = {
@@ -105,7 +109,10 @@ export default class App extends React.Component<IProps, IState> {
     tempMenu: <></>,
     updateMenu: false,
 
-    operationResult: false
+    updateResult: false,
+    tempResult: false,
+    operationResult: false,
+    currentOperation: null
   };
 
   componentDidMount() {
@@ -148,6 +155,12 @@ export default class App extends React.Component<IProps, IState> {
       this.storeArguments();
       this.setState({ updateArguments: !this.state.updateArguments });
     }
+    if (this.state.updateResult) {
+      console.log("----> " + this.state.tempResult);
+
+      this.setState({ operationResult: this.state.tempResult });
+      this.setState({ updateResult: false });
+    }
   }
 
   shouldComponentUpdate(nextProps: IProps, nextState: IState) {
@@ -159,7 +172,10 @@ export default class App extends React.Component<IProps, IState> {
       this.state.idArr.length !== nextState.idArr.length ||
       this.state.keyCounter !== nextState.keyCounter ||
       this.state.argumentsArr.length !== nextState.argumentsArr.length ||
-      this.state.hideMenu !== nextState.hideMenu
+      this.state.hideMenu !== nextState.hideMenu ||
+      this.state.updateResult !== nextState.updateResult ||
+      this.state.currentOperation !== nextState.currentOperation ||
+      this.state.tempResult !== nextState.tempResult
     ) {
       return true;
     }
@@ -224,7 +240,7 @@ export default class App extends React.Component<IProps, IState> {
     let id = e.currentTarget.id;
 
     // this.setState({ value: val });
-    console.log("counter " + id);
+    // console.log("counter " + id);
     let flag = false;
 
     // Read all of the values of the arguments
@@ -232,7 +248,6 @@ export default class App extends React.Component<IProps, IState> {
       const key: any = localStorage.key(i);
 
       if (key === id) {
-        console.log(key);
         // Replace values
         let item = localStorage.getItem(key);
         const json = JSON.parse(JSON.stringify(item));
@@ -265,6 +280,12 @@ export default class App extends React.Component<IProps, IState> {
       localStorage.setItem(id, JSON.stringify(newRes));
     }
 
+    if (this.state.currentOperation === "Arguments") {
+      var boolValue = select === "true";
+      this.setState({ tempResult: boolValue });
+      this.setState({ updateResult: true });
+    }
+
     this.setState({ updateArguments: !this.state.updateArguments });
   }
 
@@ -295,6 +316,7 @@ export default class App extends React.Component<IProps, IState> {
         this.MenuInterface(1);
         break;
       case "constant":
+        this.MenuInterface(2);
         break;
 
       default:
@@ -316,8 +338,11 @@ export default class App extends React.Component<IProps, IState> {
     switch (key) {
       case 1:
         this.setState({ tempMenu: this.createArgumentsMenu() });
+        this.setState({ currentOperation: "Arguments" });
         break;
       case 2:
+        this.setState({ tempMenu: this.createConstantMenu() });
+        this.setState({ currentOperation: "Constant" });
         break;
       case 3:
         break;
@@ -327,23 +352,48 @@ export default class App extends React.Component<IProps, IState> {
         break;
 
       default:
-        this.setState({ tempMenu: this.createDefaultMenu() });
+        this.setState({ tempMenu: <></> });
+        this.setState({ currentOperation: null });
         break;
     }
 
     this.setState({ updateMenu: true });
   }
 
-  getArgumentsValue(e: React.FormEvent<HTMLSelectElement>) {
+  getArgumentsValue(
+    e: React.FormEvent<HTMLSelectElement> | React.FormEvent<HTMLOptionElement>
+  ) {
     const val = e.currentTarget.value;
     const json = JSON.parse(JSON.stringify(localStorage.getItem(val)));
     const item = JSON.parse(json);
 
+    console.log(item.value.select);
 
-    return item.value.select;
+    this.setState({ tempResult: item.value.select });
+    this.setState({ updateResult: true });
+  }
+
+  getConstantValue(e: React.FormEvent<HTMLSelectElement>) {
+    const select = e.currentTarget.value;
+    var boolValue = select === "true";
+    this.setState({ tempResult: boolValue });
+    this.setState({ updateResult: true });
   }
 
   /* ----- Elements Menu  ----- */
+
+  createConstantMenu(): JSX.Element {
+    const select = (
+      <div id={"0"} style={{ width: "15ex", display: "inline-block" }}>
+        <select onChange={this.getConstantValue} id="0">
+          <option value="true">true</option>
+          <option value="false">false</option>
+        </select>
+      </div>
+    );
+
+    return select;
+  }
 
   createArgumentsMenu(): JSX.Element {
     var arguments_ = JSON.parse(JSON.stringify(this.state.argumentsArr));
@@ -558,8 +608,12 @@ export default class App extends React.Component<IProps, IState> {
 
         <div id={"0"} style={{ width: "15ex", display: "inline-block" }}>
           <select id="0" onChange={this.setSelectedValue}>
-            <option value="true">true</option>
-            <option value="false">false</option>
+            <option onClick={this.getArgumentsValue} value="true">
+              true
+            </option>
+            <option onClick={this.getArgumentsValue} value="false">
+              false
+            </option>
           </select>
         </div>
 
@@ -594,9 +648,15 @@ export default class App extends React.Component<IProps, IState> {
           {this.createDefaultMenu()}
           {this.state.menu}
           {this.resetButton()}
+
+          <div style={{ transform: "translateY(30px)" }}>
+            Result:
+            {"   " + this.state.operationResult}
+          </div>
         </div>
       </div>
     );
   }
 }
+
 
