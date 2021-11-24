@@ -421,7 +421,7 @@ export default class App extends React.Component<IProps, IState> {
 
     idArr.push(finalID.toString());
 
-   // console.log("arr "+idArr);
+    // console.log("arr "+idArr);
 
     this.setState({ id: finalID });
     this.setState({ idArr: idArr });
@@ -449,42 +449,30 @@ export default class App extends React.Component<IProps, IState> {
   }
 
   createTextField(): JSX.Element {
+    // Temp work around, since react state is asynchronous
     let arr = this.state.idArr;
-    var id = arr[parseInt(this.state.id, 0)];
-    console.log("IDDDD " + id);
-    if(id === undefined)
-      id = this.state.id;
-    else
-      id = (id + 1).toString();
+    let id = arr[parseInt(this.state.id, 0)];
+    if (id === undefined) id = parseInt(this.state.id + 1, 0).toString();
+    else id = parseInt(this.state.id + 2, 0).toString();
 
     const textfield = (
       <div style={{ float: "left", height: "70" }}>
-        <input
-          type="text"
-          size="5"
-          id={id}
-          onChange={this.setTextValue}
-        />
+        <input type="text" size="5" id={id} onChange={this.setTextValue} />
       </div>
     );
     return textfield;
   }
 
   createSelect(): JSX.Element {
+    // Temp work around, since react state is asynchronous
     let arr = this.state.idArr;
     let id = arr[parseInt(this.state.id, 0)];
-    if(id === undefined)
-    id = this.state.id;
-    else
-      id = (id + 1).toString();
+    if (id === undefined) id = (parseInt(this.state.id , 0) + 1).toString();
+    else id = (parseInt(this.state.id, 0) + 2).toString();
 
     const select = (
       <div style={{ width: "15ex", display: "inline-block" }}>
-        <select
-          name="boolean"
-          id={id}
-          onChange={this.setSelectedValue}
-        >
+        <select name="boolean" id={id} onChange={this.setSelectedValue}>
           <option value="true">true</option>
           <option value="false">false</option>
         </select>
