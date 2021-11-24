@@ -25,8 +25,8 @@ interface IState {
   argumentsArr: any[];
   argumentsList: LinkedList<number>;
   value: string;
-  idArr: string[];
-  id: string;
+  idArr: number[];
+  id: number;
   keyCounter: number;
 
   /* For operatons */
@@ -82,7 +82,7 @@ export default class App extends React.Component<IProps, IState> {
     argumentsList: new LinkedList<number>(),
     value: "",
     idArr: [],
-    id: "0",
+    id: 0,
     keyCounter: 0,
 
     /* For operatons */
@@ -170,7 +170,7 @@ export default class App extends React.Component<IProps, IState> {
 
     // this.setState({ value: val });
 
-    //console.log("coun " + id);
+    console.log("coun " + id);
     let flag = false;
 
     // Read all of the values of the arguments
@@ -217,7 +217,6 @@ export default class App extends React.Component<IProps, IState> {
     let id = e.currentTarget.id;
 
     // this.setState({ value: val });
-
     console.log("counter " + id);
     let flag = false;
 
@@ -417,9 +416,9 @@ export default class App extends React.Component<IProps, IState> {
     }
 
     if (id_ === Number.MIN_VALUE) id_ = 1;
-    const finalID = (id_ + 1).toString();
+    const finalID = (id_ + 1);
 
-    idArr.push(finalID.toString());
+    idArr.push(finalID);
 
     // console.log("arr "+idArr);
 
@@ -434,12 +433,12 @@ export default class App extends React.Component<IProps, IState> {
       value: { text: "undefined", select: "true" }
     };
 
-    localStorage.setItem(finalID, JSON.stringify(newRes));
+    localStorage.setItem(finalID.toString(), JSON.stringify(newRes));
 
     this.storeArguments();
 
     const html = (
-      <div id={finalID} style={{ display: "inline-block" }}>
+      <div id={finalID.toString()} style={{ display: "inline-block" }}>
         {select}
         {textField}
       </div>
@@ -451,13 +450,13 @@ export default class App extends React.Component<IProps, IState> {
   createTextField(): JSX.Element {
     // Temp work around, since react state is asynchronous
     let arr = this.state.idArr;
-    let id = arr[parseInt(this.state.id, 0)];
-    if (id === undefined) id = parseInt(this.state.id + 1, 0).toString();
-    else id = parseInt(this.state.id + 2, 0).toString();
+    let id = arr[this.state.id];
+    if (id === undefined) id = this.state.id + 1;
+    else id = this.state.id + 2;
 
     const textfield = (
       <div style={{ float: "left", height: "70" }}>
-        <input type="text" size="5" id={id} onChange={this.setTextValue} />
+        <input type="text" size="5" id={id.toString()} onChange={this.setTextValue} />
       </div>
     );
     return textfield;
@@ -466,13 +465,13 @@ export default class App extends React.Component<IProps, IState> {
   createSelect(): JSX.Element {
     // Temp work around, since react state is asynchronous
     let arr = this.state.idArr;
-    let id = arr[parseInt(this.state.id, 0)];
-    if (id === undefined) id = (parseInt(this.state.id , 0) + 1).toString();
-    else id = (parseInt(this.state.id, 0) + 2).toString();
+    let id = arr[this.state.id];
+    if (id === undefined) id = this.state.id + 1;
+    else id = this.state.id + 2;
 
     const select = (
       <div style={{ width: "15ex", display: "inline-block" }}>
-        <select name="boolean" id={id} onChange={this.setSelectedValue}>
+        <select name="boolean" id={id.toString()} onChange={this.setSelectedValue}>
           <option value="true">true</option>
           <option value="false">false</option>
         </select>
@@ -571,3 +570,4 @@ export default class App extends React.Component<IProps, IState> {
     );
   }
 }
+
