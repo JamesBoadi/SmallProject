@@ -64,6 +64,7 @@ export default class App extends React.Component<IProps, IState> {
     super(props);
     this.MenuInterface = this.MenuInterface.bind(this);
     this.setSelectedValue = this.setSelectedValue.bind(this);
+    this.setTextValue = this.setTextValue.bind(this);
     this.OperationBuilder = this.OperationBuilder.bind(this);
     this.createDefaultMenu = this.createDefaultMenu.bind(this);
   }
@@ -80,7 +81,7 @@ export default class App extends React.Component<IProps, IState> {
     argumentsArr: [],
     argumentsList: new LinkedList<number>(),
     value: "",
-    idArr: ["1"],
+    idArr: [],
     id: "0",
     keyCounter: 0,
 
@@ -106,7 +107,7 @@ export default class App extends React.Component<IProps, IState> {
     let newRes = {
       id: "0",
       found: true,
-      value: { text: "undefined", select: "undefined" }
+      value: { text: "undefined", select: "true" }
     };
 
     localStorage.setItem("0", JSON.stringify(newRes));
@@ -163,11 +164,11 @@ export default class App extends React.Component<IProps, IState> {
       given some args */
   }
 
-  setTextValue(e: React.FormEvent<HTMLSelectElement>) {
-    let val = e.currentTarget.value;
+  setTextValue(e: React.FormEvent<HTMLInputElement>) {
+    let text = e.currentTarget.value;
     let id = e.currentTarget.id;
 
-    this.setState({ value: val });
+    // this.setState({ value: val });
 
     //console.log("coun " + id);
     let flag = false;
@@ -180,17 +181,19 @@ export default class App extends React.Component<IProps, IState> {
         // Replace values
         let item = localStorage.getItem(key);
         const json = JSON.parse(JSON.stringify(item));
-        const val = JSON.parse(json).value;
+        let val = JSON.parse(json).value;
         let newRes = {
           id: id,
           found: true,
           value:
             val.select === undefined
-              ? { text: val , select: "undefined" }
-              : { text: val, select: val.select }
+              ? { text: text, select: "true" }
+              : { text: text, select: val.select }
         };
 
+        localStorage.removeItem(id);
         localStorage.setItem(id, JSON.stringify(newRes));
+
         flag = true;
         break;
       }
@@ -201,7 +204,7 @@ export default class App extends React.Component<IProps, IState> {
       let newRes = {
         id: id,
         found: true,
-        value: { text: val, select: "undefined" }
+        value: { text: text, select: "true" }
       };
       localStorage.setItem(id, JSON.stringify(newRes));
     }
@@ -210,33 +213,37 @@ export default class App extends React.Component<IProps, IState> {
   }
 
   setSelectedValue(e: React.FormEvent<HTMLSelectElement>) {
-    let val = e.currentTarget.value;
+    let select = e.currentTarget.value;
     let id = e.currentTarget.id;
 
-    this.setState({ value: val });
+    // this.setState({ value: val });
 
-    //console.log("coun " + id);
+    console.log("counter " + id);
     let flag = false;
 
     // Read all of the values of the arguments
     for (let i = 0; i < localStorage.length; i++) {
       const key: any = localStorage.key(i);
-      //console.log(key);
+
       if (key === id) {
+        console.log(key);
         // Replace values
         let item = localStorage.getItem(key);
         const json = JSON.parse(JSON.stringify(item));
         const val = JSON.parse(json).value;
+
         let newRes = {
           id: id,
           found: true,
           value:
             val.text === undefined
-              ? { text: "undefined", select: val }
-              : { text: val.text, select: val }
+              ? { text: "undefined", select: select }
+              : { text: val.text, select: select }
         };
 
+        localStorage.removeItem(id);
         localStorage.setItem(id, JSON.stringify(newRes));
+
         flag = true;
         break;
       }
@@ -247,7 +254,7 @@ export default class App extends React.Component<IProps, IState> {
       let newRes = {
         id: id,
         found: true,
-        value: { text: "undefined", select: val }
+        value: { text: "undefined", select: "true" }
       };
       localStorage.setItem(id, JSON.stringify(newRes));
     }
@@ -342,6 +349,7 @@ export default class App extends React.Component<IProps, IState> {
 
   createArgumentsMenu(): JSX.Element {
     var arguments_ = JSON.parse(JSON.stringify(this.state.argumentsArr));
+
     const args = (
       <div
         style={{
@@ -350,13 +358,15 @@ export default class App extends React.Component<IProps, IState> {
         }}
       >
         <select name="arguments">
-        {arguments_.map((_arguments: any) => {
+          {arguments_.map((_arguments: any) => {
             const val = JSON.parse(_arguments).value.select;
-            return <option value="arguments">{val}</option>
-        })}
-          </select>
+            return <option value="arguments">{val}</option>;
+          })}
+        </select>
       </div>
     );
+
+    // Call Operations Builder
 
     return args;
   }
@@ -370,11 +380,11 @@ export default class App extends React.Component<IProps, IState> {
         }}
       >
         {!this.state.hideMenu && (
-          <select onChange={this.OperationBuilder} >
+          <select onChange={this.OperationBuilder}>
             <option value="none" selected disabled hidden>
               Select...
             </option>
-            <option value="arguments" >Arguments</option>
+            <option value="arguments">Arguments</option>
             <option value="constant">Constant</option>
           </select>
         )}
@@ -406,10 +416,12 @@ export default class App extends React.Component<IProps, IState> {
       min = getValues(element) > min ? getValues(element) : min;
     }
 
-    if (id_ === Number.MIN_VALUE) id_ = 0;
-
+    if (id_ === Number.MIN_VALUE) id_ = 1;
     const finalID = (id_ + 1).toString();
-    idArr[parseInt(finalID, 0)] = finalID;
+
+    idArr.push(finalID.toString());
+
+   // console.log("arr "+idArr);
 
     this.setState({ id: finalID });
     this.setState({ idArr: idArr });
@@ -419,7 +431,7 @@ export default class App extends React.Component<IProps, IState> {
     let newRes = {
       id: finalID,
       found: true,
-      value: { text: "undefined", select: "undefined" }
+      value: { text: "undefined", select: "true" }
     };
 
     localStorage.setItem(finalID, JSON.stringify(newRes));
@@ -437,12 +449,21 @@ export default class App extends React.Component<IProps, IState> {
   }
 
   createTextField(): JSX.Element {
+    let arr = this.state.idArr;
+    var id = arr[parseInt(this.state.id, 0)];
+    console.log("IDDDD " + id);
+    if(id === undefined)
+      id = this.state.id;
+    else
+      id = (id + 1).toString();
+
     const textfield = (
       <div style={{ float: "left", height: "70" }}>
         <input
           type="text"
           size="5"
-          id={this.state.idArr[parseInt(this.state.id, 0)]}
+          id={id}
+          onChange={this.setTextValue}
         />
       </div>
     );
@@ -450,11 +471,18 @@ export default class App extends React.Component<IProps, IState> {
   }
 
   createSelect(): JSX.Element {
+    let arr = this.state.idArr;
+    let id = arr[parseInt(this.state.id, 0)];
+    if(id === undefined)
+    id = this.state.id;
+    else
+      id = (id + 1).toString();
+
     const select = (
       <div style={{ width: "15ex", display: "inline-block" }}>
         <select
           name="boolean"
-          id={this.state.idArr[parseInt(this.state.id, 0)]}
+          id={id}
           onChange={this.setSelectedValue}
         >
           <option value="true">true</option>
@@ -509,7 +537,7 @@ export default class App extends React.Component<IProps, IState> {
         {/* todo: use <OperationBuilder> and have an interface
             for entering arguments and seeing the result */}
         <div id={"0"} style={{ float: "left", height: "70" }}>
-          <input type="text" size="5" />
+          <input id="0" onChange={this.setTextValue} type="text" size="5" />
         </div>
 
         <div id={"0"} style={{ width: "15ex", display: "inline-block" }}>
@@ -555,5 +583,3 @@ export default class App extends React.Component<IProps, IState> {
     );
   }
 }
-
-
