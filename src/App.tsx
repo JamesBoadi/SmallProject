@@ -144,8 +144,6 @@ export default class App extends React.Component<IProps, IState> {
     this.setState({ tempMenu: this.createDefaultMenu(0) });
     this.setState({ operationId: this.state.operationId + 1 });
     this.setState({ updateMenu: true });
-
-    this.MenuInterface(3);
   }
 
   componentDidUpdate(prevProps: IProps, prevState: IState, snapshot: any) {
@@ -181,7 +179,7 @@ export default class App extends React.Component<IProps, IState> {
     }
     if (this.state.updateOperation) {
       let arr = this.state.tempOperatorArr;
-      console.log(arr);
+     // console.log(arr);
       this.setState({ arrayOfOperators: arr });
       this.setState({ updateOperation: false });
     }
@@ -339,26 +337,27 @@ export default class App extends React.Component<IProps, IState> {
 
   OperationBuilder(e: React.FormEvent<HTMLSelectElement>) {
     const val = e.currentTarget.value;
-
     const id = e.currentTarget.id;
+
+    console.log(id);
 
     switch (val) {
       case "arguments":
-        this.MenuInterface(1);
+        this.MenuInterface(1, id);
         break;
       case "constant":
-        this.MenuInterface(2);
+        this.MenuInterface(2, id);
         break;
 
       case "not-operator":
-        this.MenuInterface(3);
+        this.MenuInterface(3, id);
         break;
       default:
         break;
     }
   }
 
-  MenuInterface(key: number) {
+  MenuInterface(key: number, id: string) {
     switch (key) {
       case 1:
         this.setState({ tempMenu: this.createArgumentsMenu() });
@@ -389,6 +388,13 @@ export default class App extends React.Component<IProps, IState> {
         this.setState({ updateMenu: true });
         break;
     }
+/*
+    if (id === "0") {
+      this.setState({ updateMenu: true });
+      return;
+    }
+
+    this.setState({ updateOperation: true });*/
   }
 
   getArgumentsValue(
@@ -398,7 +404,7 @@ export default class App extends React.Component<IProps, IState> {
     const json = JSON.parse(JSON.stringify(localStorage.getItem(val)));
     const item = JSON.parse(json);
 
-    console.log(item.value.select);
+   // console.log(item.value.select);
 
     this.setState({ tempResult: item.value.select });
     this.setState({ updateResult: true });
@@ -429,43 +435,72 @@ export default class App extends React.Component<IProps, IState> {
     this.setState({ operationId: key + 1 });
     let arr = this.state.operationIdArr;
     let id = arr[this.state.operationId];
-    if (id === undefined || id === 1) id = key;
-    else id = key + 1;
+    if (id === undefined) id = 1;
+   
+    let secondId = 0;
+    if(id % 2 === 0)
+    {
+      secondId = id;
+      id = id + 1
+    }  
+    else
+    {
+      secondId = id + 1;
+    }
+    
+   
+    console.log(id + " " + secondId);
 
     const menu1 = (
       <div
         style={{
           position: "absolute",
           top: "25px",
-          left: "-130px",
+          left: "10px",
           display: "inline-block"
         }}
       >
         {this.createDefaultMenu(id)}
+        
       </div>
     );
+
 
     const menu2 = (
       <div
         style={{
           position: "relative",
-          top: "45px",
-          left: "-130px",
-          display: "inline-block",
+          top: "25px",
+          left: "10px",
+          display: "inline-block"
         }}
       >
-        {this.createDefaultMenu(id + 1)}
+        {this.createDefaultMenu(secondId)}
       </div>
     );
 
-    const html = (
-      <div style={{ display: "inline-table", position: "relative" }}>
+    const css1 = {
+      display: "flex"
+      // verticalAlign: "middle"
+    };
+
+    const css2 = {
+      position: "relative",
+      display: "inline-block",
+      transform: "translateY(10px)"
+    };
+
+    const html1 = (
+      <div style={css1}>
         {menu1}
         {menu2}
       </div>
     );
-    
-    array.push(html);
+
+    const html2 = <div style={css2}>{menu2}</div>;
+
+    array.push(html1);
+    // array.push(html2);
 
     return array;
   }
@@ -542,7 +577,7 @@ export default class App extends React.Component<IProps, IState> {
         <button
           type="button"
           onClick={() => {
-            this.MenuInterface(0);
+            this.MenuInterface(0,"");
           }}
         >
           Reset
@@ -559,7 +594,7 @@ export default class App extends React.Component<IProps, IState> {
         <button
           type="button"
           onClick={() => {
-            this.MenuInterface(0);
+            this.MenuInterface(0, "");
           }}
         >
           Reset
@@ -774,5 +809,3 @@ export default class App extends React.Component<IProps, IState> {
     );
   }
 }
-
-
