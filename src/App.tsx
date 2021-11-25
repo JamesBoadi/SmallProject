@@ -31,8 +31,12 @@ interface IState {
 
   /* For operatons */
   arrayOfOperators: JSX.Element[];
+  tempOperatorArr: JSX.Element[];
+
   operationId: number;
   operationIdArr: number[];
+
+  updateOperation: boolean;
   updateMenu: boolean;
   listOfArguments_op: ArgTypeOp;
   selectedArgumentOption: number;
@@ -100,8 +104,10 @@ export default class App extends React.Component<IProps, IState> {
     /* -------------- */
 
     arrayOfOperators: [],
+    tempOperatorArr: [],
     operationId: 0,
     operationIdArr: [],
+    updateOperation: false,
 
     selectedArgumentOption: 5,
 
@@ -169,10 +175,13 @@ export default class App extends React.Component<IProps, IState> {
       this.setState({ updateArguments: !this.state.updateArguments });
     }
     if (this.state.updateResult) {
-      console.log("----> " + this.state.tempResult);
-
       this.setState({ operationResult: this.state.tempResult });
       this.setState({ updateResult: false });
+    }
+    if (this.state.updateOperation) {
+      let arr = this.state.tempOperatorArr;
+      this.setState({ arrayOfOperators: arr });
+      this.setState({ updateOperation: false });
     }
   }
 
@@ -353,16 +362,19 @@ export default class App extends React.Component<IProps, IState> {
       case 1:
         this.setState({ tempMenu: this.createArgumentsMenu() });
         this.setState({ currentOperation: "Arguments" });
+        this.setState({ updateMenu: true });
         break;
       case 2:
         this.setState({ tempMenu: this.createConstantMenu() });
         this.setState({ currentOperation: "Constant" });
+        this.setState({ updateMenu: true });
         break;
       case 3:
-        // match id to element
-    
-        this.setState({ tempMenu: this.createArgumentParameters(this.state.operationId) });
+        // operations arr
+        this.setState({ arrayOfOperators: 
+          this.createArgumentParameters(this.state.operationId) });
         this.setState({ currentOperation: "Not-Operator" });
+        this.setState({ updateOperation: true });
         break;
       case 4:
         break;
@@ -372,10 +384,9 @@ export default class App extends React.Component<IProps, IState> {
       default:
         this.setState({ tempMenu: this.createDefaultMenu(0) });
         this.setState({ currentOperation: null });
+        this.setState({ updateMenu: true });
         break;
     }
-
-    this.setState({ updateMenu: true });
   }
 
   getArgumentsValue(
@@ -759,3 +770,4 @@ export default class App extends React.Component<IProps, IState> {
     );
   }
 }
+
