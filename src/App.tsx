@@ -30,7 +30,7 @@ interface IState {
   keyCounter: number;
 
   /* For operatons */
-  arrayOfOperators: JSX.Element[];
+  arrayOfOperators: any[];
   tempOperatorArr: JSX.Element[];
 
   operationId: number;
@@ -81,6 +81,7 @@ export default class App extends React.Component<IProps, IState> {
     this.createDefaultMenu = this.createDefaultMenu.bind(this);
     this.getArgumentsValue = this.getArgumentsValue.bind(this);
     this.getConstantValue = this.getConstantValue.bind(this);
+    this.createArgumentParameters = this.createArgumentParameters.bind(this);
   }
 
   state: IState = {
@@ -180,6 +181,7 @@ export default class App extends React.Component<IProps, IState> {
     }
     if (this.state.updateOperation) {
       let arr = this.state.tempOperatorArr;
+      console.log(arr);
       this.setState({ arrayOfOperators: arr });
       this.setState({ updateOperation: false });
     }
@@ -199,7 +201,8 @@ export default class App extends React.Component<IProps, IState> {
       this.state.currentOperation !== nextState.currentOperation ||
       this.state.tempResult !== nextState.tempResult ||
       this.state.operationId !== nextState.operationId ||
-      this.state.operationIdArr.length !== nextState.operationIdArr.length
+      this.state.operationIdArr.length !== nextState.operationIdArr.length ||
+      this.state.updateOperation !== nextState.updateOperation
     ) {
       return true;
     }
@@ -339,8 +342,6 @@ export default class App extends React.Component<IProps, IState> {
 
     const id = e.currentTarget.id;
 
-    console.log("id " + id);
-/*
     switch (val) {
       case "arguments":
         this.MenuInterface(1);
@@ -354,7 +355,7 @@ export default class App extends React.Component<IProps, IState> {
         break;
       default:
         break;
-    }*/
+    }
   }
 
   MenuInterface(key: number) {
@@ -371,8 +372,9 @@ export default class App extends React.Component<IProps, IState> {
         break;
       case 3:
         // operations arr
-        this.setState({ arrayOfOperators: 
-          this.createArgumentParameters(this.state.operationId) });
+        var arr = this.createArgumentParameters(this.state.operationId);
+
+        this.setState({ tempOperatorArr: arr });
         this.setState({ currentOperation: "Not-Operator" });
         this.setState({ updateOperation: true });
         break;
@@ -411,9 +413,7 @@ export default class App extends React.Component<IProps, IState> {
 
   storeArguments(): void {
     var arguments_ = this.state.argumentsArr;
-
     for (var i = 0; i < localStorage.length; i++) {
-      // console.log("item " + item);
       arguments_[i] = localStorage.getItem(i.toString());
     }
     this.setState({ argumentsArr: arguments_ });
@@ -424,44 +424,48 @@ export default class App extends React.Component<IProps, IState> {
   /* ----------------------------- */
 
   createArgumentParameters(key: number): JSX.Element[] {
-    var array: JSX.Element[] = [];
+    let array = this.state.tempOperatorArr;
 
-    this.setState({operationId: key + 1 });
+    this.setState({ operationId: key + 1 });
     let arr = this.state.operationIdArr;
     let id = arr[this.state.operationId];
     if (id === undefined || id === 1) id = key;
     else id = key + 1;
+
+    const menu1 = (
+      <div
+        style={{
+          position: "absolute",
+          top: "25px",
+          left: "-130px",
+          display: "inline-block"
+        }}
+      >
+        {this.createDefaultMenu(id)}
+      </div>
+    );
+
+    const menu2 = (
+      <div
+        style={{
+          position: "relative",
+          top: "45px",
+          left: "-130px",
+          display: "inline-block",
+        }}
+      >
+        {this.createDefaultMenu(id + 1)}
+      </div>
+    );
+
+    const html = (
+      <div style={{ display: "inline-table", position: "relative" }}>
+        {menu1}
+        {menu2}
+      </div>
+    );
     
-    switch (key) {
-      // Not Operator
-      case 0:
-        array.push(
-          <div
-            style={{
-              position: "absolute",
-              top: "20px",
-              left: "25px",
-              display: "inline-block"
-            }}
-          >
-            {this.createDefaultMenu(id)}
-          </div>
-        );
-
-        array.push(
-          <div
-            style={{
-              position: "relative",
-              float: "left",
-              display: "inline-block",
-            }}
-          >
-            {this.createDefaultMenu(id + 1)}
-          </div>
-        );
-
-        break;
-    }
+    array.push(html);
 
     return array;
   }
@@ -504,7 +508,7 @@ export default class App extends React.Component<IProps, IState> {
 
   createDefaultMenu(key: number): JSX.Element {
     let id_ = key.toString();
-     const select = (
+    const select = (
       <div
         id={id_.toString()}
         style={{
@@ -770,4 +774,5 @@ export default class App extends React.Component<IProps, IState> {
     );
   }
 }
+
 
