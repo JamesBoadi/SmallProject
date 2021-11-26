@@ -179,8 +179,9 @@ export default class App extends React.Component<IProps, IState> {
     }
     if (this.state.updateOperation) {
       let arr = this.state.tempOperatorArr;
-      // console.log(arr);
+      console.log(arr);
       this.setState({ arrayOfOperators: arr });
+      this.forceUpdate();
       this.setState({ updateOperation: false });
     }
   }
@@ -351,11 +352,11 @@ export default class App extends React.Component<IProps, IState> {
 
       case "not-operator":
         let arr = this.state.operationIdArr;
-        let id_ = this.state.operationId;
-        this.setState({ operationId: id_ + 1 });
-        arr[this.state.operationId] = id_ + 1;
+        let id_ = this.state.operationId + 2;
+        this.setState({ operationId: id_ });
+        arr[this.state.operationId] = id_;
         this.setState({ operationIdArr: arr });
-        this.MenuInterface(3, id);
+        this.MenuInterface(3, id_.toString());
         break;
       default:
         break;
@@ -365,19 +366,47 @@ export default class App extends React.Component<IProps, IState> {
   MenuInterface(key: number, id: string) {
     switch (key) {
       case 1:
-        this.setState({ tempMenu: this.createArgumentsMenu() });
         this.setState({ currentOperation: "Arguments" });
-        this.setState({ updateMenu: true });
+        if (id !== "0") {
+          // Replace the selected menu with chosen menu
+          let arr = this.state.tempOperatorArr;
+          let id_ = parseInt(id, 0);
+          arr[id_] = this.createArgumentsMenu();
+          this.setState({ tempOperatorArr: arr });
+          this.setState({ updateOperation: true });
+
+          break;
+        }
+        this.setState({ tempMenu: this.createArgumentsMenu() });
+
         break;
       case 2:
-        this.setState({ tempMenu: this.createConstantMenu() });
         this.setState({ currentOperation: "Constant" });
-        this.setState({ updateMenu: true });
+        if (id !== "0") {
+          // Replace the selected menu with chosen menu
+          let arr = this.state.tempOperatorArr;
+          let op = [];
+          let id_ = parseInt(id, 0);
+       //   console.log(arr.length);
+
+      /*    for (let index = 0; index < arr.length; index++) {
+            if (index !== id_) op.push(arr[index]);
+          }*/
+
+          op.push(this.createConstantMenu());
+          op.push(this.createConstantMenu());
+
+          this.setState({ tempOperatorArr: op });
+
+          this.setState({ updateOperation: true });
+
+          break;
+        }
+        this.setState({ tempMenu: this.createConstantMenu() });
         break;
       case 3:
         // operations arr
         var arr = this.createArgumentParameters(this.state.operationId);
-
         this.setState({ tempOperatorArr: arr });
         this.setState({ currentOperation: "Not-Operator" });
         this.setState({ updateOperation: true });
@@ -393,13 +422,11 @@ export default class App extends React.Component<IProps, IState> {
         this.setState({ updateMenu: true });
         break;
     }
-    /*
+
     if (id === "0") {
       this.setState({ updateMenu: true });
       return;
     }
-
-    this.setState({ updateOperation: true });*/
   }
 
   getArgumentsValue(
@@ -798,3 +825,4 @@ export default class App extends React.Component<IProps, IState> {
     );
   }
 }
+
