@@ -38,7 +38,11 @@ interface IState {
 
   updateOperation: boolean;
   updateMenu: boolean;
-  listOfArguments_op: ArgTypeOp;
+  selectOptionsArray: JSX.Element[];
+  tempSelectOptionsArray: JSX.Element[];
+  updateSelectOptions: boolean;
+
+
   selectedArgumentOption: number;
   menu: JSX.Element;
   tempMenu: JSX.Element;
@@ -104,16 +108,17 @@ export default class App extends React.Component<IProps, IState> {
     /* For operatons */
     /* -------------- */
 
+    // Arguments
     arrayOfOperators: [],
     tempOperatorArr: [],
     operationId: 0,
     operationIdArr: [],
     updateOperation: false,
 
+    selectOptionsArray: [],
+    updateSelectOptions: false,
+    tempSelectOptionsArray: [],
     selectedArgumentOption: 5,
-
-    // Arguments
-    listOfArguments_op: [{ label: "", value: 0 }],
 
     // And Operator
 
@@ -131,6 +136,8 @@ export default class App extends React.Component<IProps, IState> {
 
   componentDidMount() {
     if (localStorage.length !== this.state.keyCounter) localStorage.clear();
+
+    this.menuOptions(0, 0);
 
     let newRes = {
       id: "0",
@@ -179,10 +186,15 @@ export default class App extends React.Component<IProps, IState> {
     }
     if (this.state.updateOperation) {
       let arr = this.state.tempOperatorArr;
-      console.log(arr);
       this.setState({ arrayOfOperators: arr });
-      this.forceUpdate();
       this.setState({ updateOperation: false });
+    }
+    if (this.state.updateSelectOptions) {
+      //console.log(this.state.arrayOfOperators)
+      this.setState({selectOptionsArray: this.state.tempSelectOptionsArray})
+      this.forceUpdate();
+
+      this.setState({ updateSelectOptions: false });
     }
   }
 
@@ -201,7 +213,9 @@ export default class App extends React.Component<IProps, IState> {
       this.state.tempResult !== nextState.tempResult ||
       this.state.operationId !== nextState.operationId ||
       this.state.operationIdArr.length !== nextState.operationIdArr.length ||
-      this.state.updateOperation !== nextState.updateOperation
+      this.state.updateOperation !== nextState.updateOperation ||
+      this.state.updateSelectOptions !== nextState.updateSelectOptions ||
+      this.state.tempSelectOptionsArray.length !== nextState.tempSelectOptionsArray.length
     ) {
       return true;
     }
@@ -338,16 +352,18 @@ export default class App extends React.Component<IProps, IState> {
 
   OperationBuilder(e: React.FormEvent<HTMLSelectElement>) {
     const val = e.currentTarget.value;
-    const id = e.currentTarget.id;
+    const id = parseInt(e.currentTarget.id, 0) ;
 
-    console.log(id);
+    console.log(val);
 
     switch (val) {
       case "arguments":
-        this.MenuInterface(1, id);
+        this.menuOptions(1, id);
+        this.MenuInterface(1, id.toString());
         break;
       case "constant":
-        this.MenuInterface(2, id);
+        this.menuOptions(2, id);
+        this.MenuInterface(2, id.toString());
         break;
 
       case "not-operator":
@@ -355,59 +371,47 @@ export default class App extends React.Component<IProps, IState> {
         let id_ = this.state.operationId + 2;
         this.setState({ operationId: id_ });
         arr[this.state.operationId] = id_;
+
         this.setState({ operationIdArr: arr });
         this.MenuInterface(3, id_.toString());
         break;
-      default:
-        break;
+     
     }
   }
 
   MenuInterface(key: number, id: string) {
+    let id_ = parseInt(id, 0);
+    let arr = this.state.tempOperatorArr;
     switch (key) {
       case 1:
         this.setState({ currentOperation: "Arguments" });
         if (id !== "0") {
           // Replace the selected menu with chosen menu
-          let arr = this.state.tempOperatorArr;
-          let id_ = parseInt(id, 0);
-          arr[id_] = this.createArgumentsMenu();
+     //     this.setState({ arrayOfOperators: [] });
+          console.log("this Id " + id_);
+          arr[0] = this.createArgumentsMenu(parseInt(id, 0));
+         
           this.setState({ tempOperatorArr: arr });
+          this.setState({ arrayOfOperators: [] });
           this.setState({ updateOperation: true });
-
           break;
         }
-        this.setState({ tempMenu: this.createArgumentsMenu() });
-
+        this.setState({ tempMenu: this.createArgumentsMenu(parseInt(id,0)) });
         break;
       case 2:
+      
         this.setState({ currentOperation: "Constant" });
         if (id !== "0") {
-          // Replace the selected menu with chosen menu
-          let arr = this.state.tempOperatorArr;
-          let op = [];
-          let id_ = parseInt(id, 0);
-       //   console.log(arr.length);
-
-      /*    for (let index = 0; index < arr.length; index++) {
-            if (index !== id_) op.push(arr[index]);
-          }*/
-
-          op.push(this.createConstantMenu());
-          op.push(this.createConstantMenu());
-
-          this.setState({ tempOperatorArr: op });
-
+          arr[id_] = this.createConstantMenu(id_);
+          this.setState({ arrayOfOperators: [] });
+          this.setState({ tempOperatorArr: arr });
           this.setState({ updateOperation: true });
-
-          break;
         }
-        this.setState({ tempMenu: this.createConstantMenu() });
+        this.setState({ tempMenu: this.createConstantMenu(parseInt(id,0)) });
         break;
       case 3:
         // operations arr
-        var arr = this.createArgumentParameters(this.state.operationId);
-        this.setState({ tempOperatorArr: arr });
+        this.createArgumentParameters(this.state.operationId);
         this.setState({ currentOperation: "Not-Operator" });
         this.setState({ updateOperation: true });
         break;
@@ -469,7 +473,9 @@ export default class App extends React.Component<IProps, IState> {
     if (id === undefined) id = 1;
     else id = id + 1;
 
-    const menu1 = (
+    this.menuOptions(0, id);
+    
+   let menu1 = (
       <div
         style={{
           position: "absolute",
@@ -482,7 +488,9 @@ export default class App extends React.Component<IProps, IState> {
       </div>
     );
 
-    const menu2 = (
+    id += 1;
+    this.menuOptions(0, id);
+    let menu2 = (
       <div
         style={{
           position: "relative",
@@ -491,42 +499,31 @@ export default class App extends React.Component<IProps, IState> {
           display: "inline-block"
         }}
       >
-        {this.createDefaultMenu(id + 1)}
+        {this.createDefaultMenu(id)}
       </div>
     );
 
     const css1 = {
       display: "flex"
-      // verticalAlign: "middle"
+     // verticalAlign: "middle"
     };
 
-    const css2 = {
-      position: "relative",
-      display: "inline-block",
-      transform: "translateY(10px)"
-    };
-
-    const html1 = (
+    const html = (
       <div style={css1}>
         {menu1}
         {menu2}
       </div>
     );
 
-    const html2 = <div style={css2}>{menu2}</div>;
-
-    array.push(html1);
-    // array.push(html2);
-
+    array.push(html);
     return array;
   }
 
-  createConstantMenu(): JSX.Element {
-    const select = (
+  createConstantMenu(id: number): JSX.Element {
+    let select = (
       <div id={"0"} style={{ width: "15ex", display: "inline-block" }}>
-        <select onChange={this.getConstantValue} id="0">
-          <option value="true">true</option>
-          <option value="false">false</option>
+        <select onChange={this.getConstantValue} id={id.toString()}>
+        
         </select>
       </div>
     );
@@ -534,16 +531,16 @@ export default class App extends React.Component<IProps, IState> {
     return select;
   }
 
-  createArgumentsMenu(): JSX.Element {
+  createArgumentsMenu(id: number): JSX.Element {
     var arguments_ = JSON.parse(JSON.stringify(this.state.argumentsArr));
-    const args = (
+    let args = (
       <div
         style={{
           width: "15ex",
           float: "left"
         }}
       >
-        <select onChange={this.getArgumentsValue} name="arguments">
+        <select onChange={this.getArgumentsValue} name="arguments" id={id.toString()}>
           {arguments_.map((_arguments: any) => {
             const id = JSON.parse(_arguments).id;
             const val = JSON.parse(_arguments).value.text;
@@ -557,52 +554,72 @@ export default class App extends React.Component<IProps, IState> {
     return args;
   }
 
-  createDefaultMenu(key: number): JSX.Element {
-    let id_ = key.toString();
-    const select = (
+  // Call every time a default menu is created
+  menuOptions(key: number, id: number) {
+    let selectOptionsArr = this.state.tempSelectOptionsArray;
+    
+  //  console.log(selectOptionsArr);
+    let defaultMenu = (
+      <select id={id.toString()} onChange={this.OperationBuilder}>
+        <option value="none" selected disabled hidden>
+          Select...
+        </option>
+        <option value="arguments">Arguments</option>
+        <option value="constant">Constant</option>
+        <option value="not-operator">Not</option>
+      </select>
+    );
+
+    let constantMenu = this.createConstantMenu(id);
+    let argumentsMenu = this.createArgumentsMenu(id);
+
+    switch (key) {
+      case 0:
+        selectOptionsArr[id] = defaultMenu;
+        break;
+      case 2:
+         // console.log("constant ");
+        selectOptionsArr[id] = constantMenu;
+        break;
+      case 1:
+       //   console.log("arguments ");
+        selectOptionsArr[id] = argumentsMenu;
+        break;
+    }
+
+    this.setState({ tempSelectOptionsArray: selectOptionsArr });
+    this.setState({ updateSelectOptions: true });
+  }
+
+  createDefaultMenu(id: number): JSX.Element {
+  //  let selectOptionsArr = this.state.selectOptionsArray;
+    let id_ = id.toString();
+  //  !this.state.hideMenu &&
+
+
+//   console.log("changed " + id_)
+    let select = (
       <div
         id={id_.toString()}
+        
         style={{
           width: "15ex",
           float: "left"
         }}
       >
-        {!this.state.hideMenu && (
-          <select id={id_.toString()} onChange={this.OperationBuilder}>
-            <option value="none" selected disabled hidden>
-              Select...
-            </option>
-            <option value="arguments">Arguments</option>
-            <option value="constant">Constant</option>
-            <option value="not-operator">Not</option>
-          </select>
-        )}
+
+        
+        
+        { (id === 0) ? this.state.tempSelectOptionsArray[id] : 
+        this.state.selectOptionsArray[id]}
       </div>
     );
-
     return select;
   }
 
   /* ------------------------ */
   /* ----- JSX Elements ----- */
   /* ------------------------ */
-
-  addOperatorButton(): JSX.Element {
-    const addOperatorButton = (
-      <div style={{ position: "relative", display: "inline-block" }}>
-        <button
-          type="button"
-          onClick={() => {
-            this.MenuInterface(0, "");
-          }}
-        >
-          Reset
-        </button>
-      </div>
-    );
-
-    return addOperatorButton;
-  }
 
   resetButton(): JSX.Element {
     const resetButton = (
@@ -825,4 +842,5 @@ export default class App extends React.Component<IProps, IState> {
     );
   }
 }
+
 
