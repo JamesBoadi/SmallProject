@@ -141,8 +141,6 @@ export default class App extends React.Component<IProps, IState> {
   componentDidMount() {
     if (localStorage.length !== this.state.keyCounter) localStorage.clear();
 
-    this.menuOptions(0, 0);
-
     let newRes = {
       id: "0",
       found: true,
@@ -152,7 +150,9 @@ export default class App extends React.Component<IProps, IState> {
     localStorage.setItem("0", JSON.stringify(newRes));
     this.storeArguments();
 
-    this.setState({ tempMenu: this.createDefaultMenu(0) });
+    this.menuOptions(0, 0);
+
+   // this.setState({ tempMenu: this.createDefaultMenu(0) });
     this.setState({ operationId: this.state.operationId + 1 });
     this.setState({ updateMenu: true });
   }
@@ -196,7 +196,7 @@ export default class App extends React.Component<IProps, IState> {
     if (this.state.updateSelectOptions) {
       //console.log(this.state.arrayOfOperators)
       this.setState({ selectOptionsArray: this.state.tempSelectOptionsArray });
-      this.forceUpdate();
+    //  this.forceUpdate();
 
       this.setState({ updateSelectOptions: false });
     }
@@ -469,9 +469,7 @@ export default class App extends React.Component<IProps, IState> {
   /* ----------------------------- */
   // Call every time a default menu is created
   menuOptions(key: number, id: number) {
-    let selectOptionsArr = this.state.tempSelectOptionsArray;
-    let tempArr = [...this.state.arrayOfOperators];
-
+    let tempArr = [...this.state.tempOperatorArr];
     let defaultMenu = (
       <select id={id.toString()} onChange={this.OperationBuilder}>
         <option value="none" selected disabled hidden>
@@ -488,21 +486,16 @@ export default class App extends React.Component<IProps, IState> {
 
     switch (key) {
       case 0:
-        //selectOptionsArr[id] = defaultMenu;
-        tempArr[id] = <div>MY LIFE let me gooooooooooooooooo</div>;
+        tempArr[id] = defaultMenu;
         break;
       case 2:
-        // console.log("constant ");
-        //selectOptionsArr[id] = constantMenu;
         tempArr[id] = constantMenu;
         break;
       case 1:
-        //   console.log("arguments ");
-        //selectOptionsArr[id] = argumentsMenu;
         tempArr[id] = argumentsMenu;
         break;
     }
-    this.setState({ arrayOfOperators: tempArr });
+    this.setState({ tempOperatorArr: tempArr });
     this.setState({ updateOperation: true });
   }
 
