@@ -1,8 +1,8 @@
 import React from "react";
 import { LinkedList } from "linked-list-typescript";
 
-type Args = { [argname: string]: boolean };
-type Operation = { id: string; argument1: string; argument2: string };
+type Args = { id: string; argument: string };
+type Operation = { id: string; argument: string };
 type OptionType = { id: string; label: string; value: string };
 type ArgType = {
   id: string;
@@ -42,6 +42,7 @@ interface IState {
 
   // Store Operations in linked list
   operationArray: Operation[];
+  boolArgs: Args[];
 
   // Options
   argumentOptions: JSX.Element[];
@@ -125,6 +126,7 @@ export default class App extends React.Component<IProps, IState> {
 
     // Store Operations in linked list
     operationArray: [],
+    boolArgs: [],
 
     // Options
     argumentOptions: [],
@@ -158,6 +160,13 @@ export default class App extends React.Component<IProps, IState> {
 
     this.menuOptions(0, 0, "");
 
+    let res = {
+      id: "0",
+      argument: "true"
+    };
+
+    localStorage.setItem("arg", JSON.stringify(res));
+
     this.setState({ operationId: this.state.operationId + 1 });
     this.setState({ updateMenu: true });
   }
@@ -190,27 +199,21 @@ export default class App extends React.Component<IProps, IState> {
       this.setState({ updateArguments: !this.state.updateArguments });
     }
     if (this.state.updateResult) {
-      const val = localStorage.getItem("val");
+      let res;
+      let val = localStorage.getItem("op");
       if (val !== null || val !== undefined) {
         const json = JSON.parse(JSON.stringify(val));
-        const id = json.id;
-
+        const id = JSON.parse(json).id;
+        const arg = JSON.parse(json).argument;
         // Call evaluators here
-        let operation = this.state.operationArray;
-        operation[id] = json.argument;
+        let operation = [...this.state.operationArray];
+        operation[id] = { id: id, argument: arg };
+        res = this.evaluateOperation(operation);
 
-        this.evaluateOperation(operation[id]);
+        console.log(operation[id]);
       }
-      /* let oparr = [...this.state.operationArray];
-    let oparr_json = JSON.parse(JSON.stringify(oparr[id]));
-    let res;
-    res = {
-      id: id.toString(),
-      argument1: , 
-      argument2: "true" 
-    };*/
 
-      this.setState({ operationResult: this.state.tempResult });
+      //  this.setState({ operationResult: res });
       this.setState({ updateResult: false });
     }
     if (this.state.updateOperation) {
@@ -253,8 +256,10 @@ export default class App extends React.Component<IProps, IState> {
     return false;
   }
 
-  evaluateOperation(operation: Operation): void {
-    console.log("Oh oh oh " + operation);
+  evaluateOperation(operation: Operation[]): boolean {
+    /* const json = JSON.parse(JSON.stringify(operation));
+    console.log('-> ' );
+    console.log(json.argument);*/
   }
 
   setTextValue(e: React.FormEvent<HTMLInputElement>) {
@@ -307,7 +312,7 @@ export default class App extends React.Component<IProps, IState> {
     let select = e.currentTarget.value;
     let id = e.currentTarget.id;
     let flag = false;
-
+    let res;
     // Read all of the values of the arguments
     for (let i = 0; i < localStorage.length; i++) {
       const key: any = localStorage.key(i);
@@ -329,6 +334,11 @@ export default class App extends React.Component<IProps, IState> {
         localStorage.removeItem(id);
         localStorage.setItem(id, JSON.stringify(newRes));
 
+        res = {
+          id: id.toString(),
+          argument: select
+        };
+
         flag = true;
         break;
       }
@@ -341,8 +351,20 @@ export default class App extends React.Component<IProps, IState> {
         found: true,
         value: { text: "undefined", select: "true" }
       };
+
       localStorage.setItem(id, JSON.stringify(newRes));
+
+      res = {
+        id: id.toString(),
+        argument: select
+      };
     }
+
+    const val_ = !localStorage.getItem("arg");
+
+    if (val_ !== null || val_ !== undefined)
+      localStorage.setItem("arg", JSON.stringify(res));
+    else localStorage.setItem("arg", JSON.stringify(res));
 
     if (this.state.currentOperation === "Arguments") {
       var boolValue = select === "true";
@@ -442,18 +464,20 @@ export default class App extends React.Component<IProps, IState> {
   ) {
     const val = e.currentTarget.value;
     const id = parseInt(e.currentTarget.id, 0);
-    const json = JSON.parse(JSON.stringify(localStorage.getItem(val)));
+    const json = JSON.parse(
+      JSON.stringify(localStorage.getItem(id.toString()))
+    );
     const item = JSON.parse(json);
 
     let res = {
       id: id.toString(),
       argument: val
     };
-    const val_ = !localStorage.getItem("val");
+    const val_ = !localStorage.getItem("op");
 
     if (val_ !== null || val_ !== undefined)
-      localStorage.setItem("val", JSON.stringify(res));
-    else localStorage.setItem("val", JSON.stringify(res));
+      localStorage.setItem("op", JSON.stringify(res));
+    else localStorage.setItem("op", JSON.stringify(res));
 
     this.setState({ tempResult: item.value.select });
     this.setState({ updateResult: true });
@@ -481,7 +505,7 @@ export default class App extends React.Component<IProps, IState> {
   menuOptions(key: number, id: number, val: string) {
     let tempArr = [...this.state.tempOperatorArr];
     let defaultMenu = this.createDefaultMenu(id);
-    let argumentsMenu = this.createArgumentsMenu(id, val);
+    let argumentsMenu = this.createArgumentsMenu(id);
     let constantMenu = this.createConstantMenu(id);
 
     switch (key) {
@@ -523,27 +547,34 @@ export default class App extends React.Component<IProps, IState> {
 
   createArgumentsMenu(id: number): JSX.Element {
     var arguments_ = JSON.parse(JSON.stringify(this.state.argumentsArr));
-    console.log(arguments_);
+    // console.log(arguments_);
 
-    let id_ = id.toString()
+    let id_ = id.toString();
     let args = (
       <div
         style={{
           width: "15ex",
-          float: "left"
+          float: "left",
+          position: "relative",
+          zIndex: 999
         }}
       >
-        <select onChange={this.getArgumentsValue} id={id_}>
+        <select
+          onChange={this.getArgumentsValue}
+          id={id_}
+          style={{
+            zIndex: 999
+          }}
+        >
           {arguments_.map((_arguments: any) => {
-            if (_arguments === null || _arguments === undefined)
-              return <></>;
-             
-              const json = JSON.parse(_arguments);
-              const id = json.id;
-              const val = json.value.text;
+            if (_arguments === null || _arguments === undefined) return <></>;
 
-              // Bug: array contains a null value
-              return <option value={id.toString()}>{val}</option>;
+            const json = JSON.parse(_arguments);
+            const id = json.id;
+            const val = json.value.text;
+
+            // Bug: array contains a null value
+            return <option value={val}>{val}</option>;
           })}
         </select>
       </div>
@@ -559,7 +590,8 @@ export default class App extends React.Component<IProps, IState> {
         id={id_.toString()}
         style={{
           width: "15ex",
-          position: "relative"
+          position: "relative",
+          zIndex: 1
         }}
       >
         <select id={id.toString()} onChange={this.OperationBuilder}>
@@ -594,9 +626,8 @@ export default class App extends React.Component<IProps, IState> {
           type="button"
           onClick={() => {
             this.setState({ tempOperatorArr: [] });
-
+            this.setState({ updateOperation: true });
             this.menuOptions(0, 0, "");
-            //  this.setState({ updateArguments: !this.state.updateArguments });
           }}
         >
           Reset
@@ -809,5 +840,6 @@ export default class App extends React.Component<IProps, IState> {
     );
   }
 }
+
 
 
