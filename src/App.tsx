@@ -1,15 +1,8 @@
 import React from "react";
-import { LinkedList } from "linked-list-typescript";
+
 
 type Args = { id: string; argument: string };
 type Operation = { id: string; argument: string };
-type OptionType = { id: string; label: string; value: string };
-type ArgType = {
-  id: string;
-  found: boolean;
-  value: { text: any; select: string };
-};
-type ArgTypeOp = [{ label: string; value: number }];
 
 interface IProps {}
 
@@ -23,7 +16,6 @@ interface IState {
   counter: number;
   updateArguments: boolean;
   argumentsArr: any[];
-  argumentsList: LinkedList<number>;
   value: string;
   idArr: number[];
   id: number;
@@ -61,19 +53,6 @@ interface IState {
   currentOperation: any;
 }
 
-interface Array<OptionType> {
-  (arg: OptionType): OptionType;
-}
-
-interface ArgArray<ArgTypeOp> {
-  (arg: ArgTypeOp): ArgTypeOp;
-}
-
-const booleanValues = [
-  { label: "True", value: true },
-  { label: "False", value: false }
-];
-
 const menu = [
   { label: "Constant", value: 0 },
   { label: "Argument", value: 1 },
@@ -105,7 +84,6 @@ export default class App extends React.Component<IProps, IState> {
     counter: 0,
     updateArguments: false,
     argumentsArr: [],
-    argumentsList: new LinkedList<number>(),
     value: "",
     idArr: [],
     id: 0,
@@ -202,42 +180,45 @@ export default class App extends React.Component<IProps, IState> {
       this.storeArguments();
       this.setState({ updateArguments: !this.state.updateArguments });
     }
-    if(this.state.appendOperationsArray)
-    {
-      let val = localStorage.getItem("op");
+    if (this.state.appendBoolArgsArray) {
+      let val = localStorage.getItem("arg");
       if (val !== null || val !== undefined) {
         const json = JSON.parse(JSON.stringify(val));
         const id = JSON.parse(json).id;
         const arg = JSON.parse(json).argument;
         // Call evaluators here
-        let operation = [...this.state.operationArray];
-        operation[id] = { id: id, argument: arg };
-        this.setState({operationArray: operation});
+        let boolArgsArray = [...this.state.boolArgsArray];
+        boolArgsArray[id] = { id: id, argument: arg };
+        this.setState({ boolArgsArray: boolArgsArray });
       }
 
-      this.setState({appendOperationsArray: false});
+      this.setState({ appendBoolArgsArray: false });
     }
-    if(this.state.appendBoolArgsArray)
-    {
-      let val = localStorage.getItem("args");
-      if (val !== null || val !== undefined) {
-        const json = JSON.parse(JSON.stringify(val));
-        const id = JSON.parse(json).id;
-        const arg = JSON.parse(json).argument;
-        // Call evaluators here
-        let operation = [...this.state.operationArray];
-        operation[id] = { id: id, argument: arg };
-        this.setState({operationArray: operation});
-      }
-
-      this.setState({appendBoolArgsArray: false});
-    }
-
 
     if (this.state.updateResult) {
-     
-       // res = this.evaluateOperation(operation);
-      //  this.setState({ operationResult: res });
+      const opArr = [...this.state.operationArray];
+      const argsArr = [...this.state.boolArgsArray];
+      let res;
+
+      for (let index = 0; index < localStorage.length; index++) {
+        const key = index.toString();
+        let val = localStorage.getItem(key);
+        if (val !== null || val !== undefined) {
+          let json = JSON.parse(JSON.stringify(val));
+          if (json !== null) {
+            console.log("null " + json);
+            const id = JSON.parse(json).id;
+            const op = JSON.parse(json).value.select;
+            const arg = JSON.parse(json).value.text;
+
+            opArr[index] = {id: id, argument: op};
+            argsArr[index] = {id: id, argument: arg};
+          }
+
+          res = this.evaluateOperation(opArr, argsArr);
+        }
+      }
+      this.setState({ operationResult: res });
       this.setState({ updateResult: false });
     }
     if (this.state.updateOperation) {
@@ -274,25 +255,27 @@ export default class App extends React.Component<IProps, IState> {
       this.state.updateSelectOptions !== nextState.updateSelectOptions ||
       this.state.tempSelectOptionsArray.length !==
         nextState.tempSelectOptionsArray.length ||
-        this.state.appendOperationsArray !== nextState.appendOperationsArray ||
-        this.state.appendBoolArgsArray !== nextState.appendBoolArgsArray
+      this.state.appendOperationsArray !== nextState.appendOperationsArray ||
+      this.state.appendBoolArgsArray !== nextState.appendBoolArgsArray
     ) {
       return true;
     }
     return false;
   }
 
-  evaluateOperation(operation: Operation[]): boolean {
+  evaluateOperation(operation: Operation[], args: Args[]): boolean {
     /* const json = JSON.parse(JSON.stringify(operation));
     console.log('-> ' );
     console.log(json.argument);*/
+
+    return true
   }
+
+
 
   setTextValue(e: React.FormEvent<HTMLInputElement>) {
     let text = e.currentTarget.value;
     let id = e.currentTarget.id;
-
-    console.log("coun " + id);
     let flag = false;
 
     // Read all of the values of the arguments
@@ -330,8 +313,8 @@ export default class App extends React.Component<IProps, IState> {
       };
       localStorage.setItem(id, JSON.stringify(newRes));
     }
-
     this.setState({ updateArguments: !this.state.updateArguments });
+    this.setState({ updateResult: true });
   }
 
   setSelectedValue(e: React.FormEvent<HTMLSelectElement>) {
@@ -392,12 +375,15 @@ export default class App extends React.Component<IProps, IState> {
       localStorage.setItem("arg", JSON.stringify(res));
     else localStorage.setItem("arg", JSON.stringify(res));
 
+    this.setState({ appendBoolArgsArray: true });
+
     if (this.state.currentOperation === "Arguments") {
       var boolValue = select === "true";
       this.setState({ tempResult: boolValue });
       this.setState({ updateResult: true });
     }
 
+    this.setState({ updateResult: true });
     this.setState({ updateArguments: !this.state.updateArguments });
   }
 
@@ -420,7 +406,6 @@ export default class App extends React.Component<IProps, IState> {
   /* ----- For Operations ----- */
   /* -------------------------- */
 
-  OperationsEvaluator(): void {}
 
   OperationBuilder(e: React.FormEvent<HTMLSelectElement>) {
     const val = e.currentTarget.value;
@@ -505,8 +490,9 @@ export default class App extends React.Component<IProps, IState> {
       localStorage.setItem("op", JSON.stringify(res));
     else localStorage.setItem("op", JSON.stringify(res));
 
-    this.setState({ tempResult: item.value.select });
     this.setState({ updateResult: true });
+    //  this.setState({ tempResult: item.value.select });
+    // this.setState({ updateResult: true });
   }
 
   getConstantValue(e: React.FormEvent<HTMLSelectElement>) {
@@ -866,3 +852,4 @@ export default class App extends React.Component<IProps, IState> {
     );
   }
 }
+
