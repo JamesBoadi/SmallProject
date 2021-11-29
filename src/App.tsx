@@ -195,6 +195,8 @@ export default class App extends React.Component<IProps, IState> {
     }
     if (this.state.updateOperation) {
       let arr = this.state.tempOperatorArr;
+
+  
       this.setState({ arrayOfOperators: arr });
       this.setState({ updateOperation: false });
     }
@@ -360,10 +362,12 @@ export default class App extends React.Component<IProps, IState> {
       case "arguments":
         this.menuOptions(1, id);
         this.MenuInterface(1, id.toString());
+   
         break;
       case "constant":
         this.menuOptions(2, id);
         this.MenuInterface(2, id.toString());
+    
         break;
       case "not-operator":
         let arr = this.state.operationIdArr;
@@ -382,6 +386,7 @@ export default class App extends React.Component<IProps, IState> {
       case 1:
         this.setState({ currentOperation: "Arguments" });
         if (id !== "0") {
+
           this.setState({ updateOperation: true });
           break;
         }
@@ -390,9 +395,11 @@ export default class App extends React.Component<IProps, IState> {
       case 2:
         this.setState({ currentOperation: "Constant" });
         if (id !== "0") {
+          
           this.setState({ updateOperation: true });
         }
         this.setState({ tempMenu: this.createConstantMenu(parseInt(id, 0)) });
+
         break;
       case 3:
         // operations arr
@@ -585,12 +592,16 @@ export default class App extends React.Component<IProps, IState> {
   /* ------------------------ */
 
   resetButton(): JSX.Element {
+    let arr = [...this.state.tempOperatorArr];
+    arr = [];
     const resetButton = (
+    
       <div style={{ position: "relative", display: "inline-block" }}>
         <button
           type="button"
           onClick={() => {
-            this.MenuInterface(0, "");
+            this.setState({ arrayOfOperators: [] });
+            this.setState({ updateOperation: true });
           }}
         >
           Reset
@@ -803,3 +814,4 @@ export default class App extends React.Component<IProps, IState> {
     );
   }
 }
+
