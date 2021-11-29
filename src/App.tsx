@@ -42,7 +42,9 @@ interface IState {
 
   // Store Operations in linked list
   operationArray: Operation[];
-  boolArgs: Args[];
+  boolArgsArray: Args[];
+  appendOperationsArray: boolean;
+  appendBoolArgsArray: boolean;
 
   // Options
   argumentOptions: JSX.Element[];
@@ -126,7 +128,9 @@ export default class App extends React.Component<IProps, IState> {
 
     // Store Operations in linked list
     operationArray: [],
-    boolArgs: [],
+    boolArgsArray: [],
+    appendOperationsArray: false,
+    appendBoolArgsArray: false,
 
     // Options
     argumentOptions: [],
@@ -198,8 +202,8 @@ export default class App extends React.Component<IProps, IState> {
       this.storeArguments();
       this.setState({ updateArguments: !this.state.updateArguments });
     }
-    if (this.state.updateResult) {
-      let res;
+    if(this.state.appendOperationsArray)
+    {
       let val = localStorage.getItem("op");
       if (val !== null || val !== undefined) {
         const json = JSON.parse(JSON.stringify(val));
@@ -208,11 +212,31 @@ export default class App extends React.Component<IProps, IState> {
         // Call evaluators here
         let operation = [...this.state.operationArray];
         operation[id] = { id: id, argument: arg };
-        res = this.evaluateOperation(operation);
-
-        console.log(operation[id]);
+        this.setState({operationArray: operation});
       }
 
+      this.setState({appendOperationsArray: false});
+    }
+    if(this.state.appendBoolArgsArray)
+    {
+      let val = localStorage.getItem("args");
+      if (val !== null || val !== undefined) {
+        const json = JSON.parse(JSON.stringify(val));
+        const id = JSON.parse(json).id;
+        const arg = JSON.parse(json).argument;
+        // Call evaluators here
+        let operation = [...this.state.operationArray];
+        operation[id] = { id: id, argument: arg };
+        this.setState({operationArray: operation});
+      }
+
+      this.setState({appendBoolArgsArray: false});
+    }
+
+
+    if (this.state.updateResult) {
+     
+       // res = this.evaluateOperation(operation);
       //  this.setState({ operationResult: res });
       this.setState({ updateResult: false });
     }
@@ -249,7 +273,9 @@ export default class App extends React.Component<IProps, IState> {
       this.state.updateOperation !== nextState.updateOperation ||
       this.state.updateSelectOptions !== nextState.updateSelectOptions ||
       this.state.tempSelectOptionsArray.length !==
-        nextState.tempSelectOptionsArray.length
+        nextState.tempSelectOptionsArray.length ||
+        this.state.appendOperationsArray !== nextState.appendOperationsArray ||
+        this.state.appendBoolArgsArray !== nextState.appendBoolArgsArray
     ) {
       return true;
     }
@@ -840,6 +866,3 @@ export default class App extends React.Component<IProps, IState> {
     );
   }
 }
-
-
-
