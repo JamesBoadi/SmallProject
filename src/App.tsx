@@ -194,14 +194,12 @@ export default class App extends React.Component<IProps, IState> {
         if (id !== "") {
           storage = JSON.parse(JSON.stringify(localStorage.getItem(id)));
           arg = JSON.parse(storage).value.text;
+          const op = JSON.parse(op_json).argument;
+          boolArgsArray[id] = { operator: op, argument: arg };
         }
 
-        const op = JSON.parse(op_json).argument;
-        //if (id === "") storeOperators.push(op);
-        // Call evaluators here
-        boolArgsArray[id] = { operator: op, argument: arg };
         this.setState({ boolArgsArray: boolArgsArray });
-        res = this.evaluateOperation(boolArgsArray);
+        res = this.evaluateOperation(boolArgsArray, storeOperators);
         //console.log(boolArgsArray[id]);
       }
       this.setState({ operationResult: res });
@@ -271,48 +269,29 @@ export default class App extends React.Component<IProps, IState> {
     return false;
   }
 
-  evaluateOperation(args: Args[]): boolean {
-  /*  console.log(args);
-    const iterate = (item: any) => {
+  evaluateOperation(args: Args[], operators: any[]): boolean {
+
+    let not_operator = 0;
+    
+    const iterateArgs = (item: any) => {
       if (item !== null || item !== undefined) {
         const json = JSON.parse(JSON.stringify(item));
-        console.log("who we are");
-        console.log(json.operator + " " + json.argument);
+        //  console.log("who we are");
+        //console.log(json.operator + " " + json.argument);
       }
     };
-    args.forEach(iterate);*/
+    args.forEach(iterateArgs);
 
-    var array: JSX.Element[] = [];
-    let arrayOfOperations = this.arrayOfOperations();
-
-    for (let index = 0; index < arrayOfOperations.length; index++) {
-      const element = arrayOfOperations[index];
-      const getValues = (element: Element) => {
-        if(element !== undefined)
-        {
-          console.log(index);
-          console.log(JSON.stringify(element))
-       //   const element_ = JSON.parse(JSON.stringify(element))[0];
-
-        }
-       
-      //  console.log(element_);
-     /*   let id = element_.props.id;
-        return parseInt(id, 0);*/
+    let iterateOperations = (item: any) => {
+      if ((item !== null || item !== undefined) && 
+      item === "not") {
+        not_operator++;
       }
+    };
 
-      getValues(element);
-    
-    }
-
-
-
-
-
-
+    operators.forEach(iterateOperations);
 
     return true;
-
   }
 
   setTextValue(e: React.FormEvent<HTMLInputElement>) {
@@ -471,7 +450,6 @@ export default class App extends React.Component<IProps, IState> {
         this.setState({ operationIdArr: arr });
         this.MenuInterface(3, id_.toString());
 
-       
         break;
     }
   }
@@ -482,36 +460,37 @@ export default class App extends React.Component<IProps, IState> {
     const val_ = !localStorage.getItem("op");
     switch (key) {
       case 1:
+        storeOperators[id_] = undefined;
         this.setState({ currentOperation: "Arguments" });
         if (id !== "0") {
           this.setState({ updateOperation: true });
           break;
         }
-        this.setState({ tempMenu: this.createArgumentsMenu(parseInt(id, 0)) });
         break;
       case 2:
+        storeOperators[id_] = undefined;
         this.setState({ currentOperation: "Constant" });
         if (id !== "0") {
           this.setState({ updateOperation: true });
         }
-        this.setState({ tempMenu: this.createConstantMenu(parseInt(id, 0)) });
-
         break;
       case 3:
         // operations arr
         this.createArgumentParameters(this.state.operationId);
 
         res = {
-          id: '',
+          id: "",
           argument: "not"
         };
+
+        storeOperators[id_] = "not";
 
         if (val_ !== null || val_ !== undefined)
           localStorage.setItem("op", JSON.stringify(res));
         else localStorage.setItem("op", JSON.stringify(res));
 
         this.setState({ appendBoolArgsArray: true });
-        
+
         this.setState({ currentOperation: "Not-Operator" });
         this.setState({ updateOperation: true });
         break;
@@ -530,6 +509,10 @@ export default class App extends React.Component<IProps, IState> {
   getArgumentsValue(
     e: React.FormEvent<HTMLSelectElement> | React.FormEvent<HTMLOptionElement>
   ) {
+    const id = parseInt(e.currentTarget.id, 0);
+
+    if (id === 0) storeOperators[2] = undefined;
+
     const result = JSON.parse(e.currentTarget.value);
     const val = JSON.parse(result).value.select;
     const argsId = JSON.parse(result).id;
@@ -576,12 +559,15 @@ export default class App extends React.Component<IProps, IState> {
     switch (key) {
       case 0:
         tempArr[id] = defaultMenu;
+        //storeOperators[id] = undefined;
         break;
       case 1:
         tempArr[id] = argumentsMenu;
+        //storeOperators[id] = undefined;
         break;
       case 2:
         tempArr[id] = constantMenu;
+        //storeOperators[id] = undefined;
         break;
     }
     this.setState({ tempOperatorArr: tempArr });
