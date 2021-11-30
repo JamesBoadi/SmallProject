@@ -272,11 +272,17 @@ export default class App extends React.Component<IProps, IState> {
   evaluateOperation(args: Args[], operators: any[]): boolean {
 
     let not_operator = 0;
+    let true_arg = 0;
+    let false_arg = 0;
     
     const iterateArgs = (item: any) => {
       if (item !== null || item !== undefined) {
         const json = JSON.parse(JSON.stringify(item));
-        //  console.log("who we are");
+        let bool = json.operator;
+
+        if(bool === "true") true_arg++;
+        if(bool === "false") false_arg++;
+
         //console.log(json.operator + " " + json.argument);
       }
     };
@@ -290,6 +296,8 @@ export default class App extends React.Component<IProps, IState> {
     };
 
     operators.forEach(iterateOperations);
+
+    //console.log("->"+true_arg + ' ' + false_arg);
 
     return true;
   }
@@ -891,3 +899,4 @@ export default class App extends React.Component<IProps, IState> {
     );
   }
 }
+
