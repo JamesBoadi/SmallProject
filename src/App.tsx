@@ -60,7 +60,7 @@ const menu = [
   { label: "Xor", value: 4 }
 ];
 
-var storeOperators = [];
+var storeOperators: any[] = [];
 
 export default class App extends React.Component<IProps, IState> {
   constructor(props: any) {
@@ -270,28 +270,41 @@ export default class App extends React.Component<IProps, IState> {
   }
 
   evaluateOperation(args: Args[], operators: any[]): boolean {
-
     let not_operator = 0;
+    var stack: string[] = [];
     let true_arg = 0;
     let false_arg = 0;
-    
+
     const iterateArgs = (item: any) => {
       if (item !== null || item !== undefined) {
         const json = JSON.parse(JSON.stringify(item));
         let bool = json.operator;
-
-        if(bool === "true") true_arg++;
-        if(bool === "false") false_arg++;
-
-        //console.log(json.operator + " " + json.argument);
+        if (bool === "true") stack.push("true");
+        if (bool === "false") stack.push("false");
       }
     };
-    args.forEach(iterateArgs);
 
+    args.forEach(iterateArgs);
+    stack.reverse();
+    let res = "";
     let iterateOperations = (item: any) => {
-      if ((item !== null || item !== undefined) && 
-      item === "not") {
-        not_operator++;
+      let bool = "";
+      if (item !== null || item !== undefined) {
+        if (item === "not") {
+          if (stack.length !== 0) bool = stack.pop() || "";
+          if (bool === "false") bool = "true";
+          else if (bool === "true") bool = "false";
+        } else if (item === "and") {
+          let coeff1 = stack.pop() || "";
+          let coeff2 = stack.pop() || "";
+
+          if ((coeff1 === "false" && coeff2 === "true")
+          || (coeff1 === "true" && coeff2 === "false")) bool = "false";
+          else if (coeff1 === "true" && coeff2 === "true") bool = "true";
+          else bool = "false";
+        }
+
+        
       }
     };
 
@@ -899,4 +912,3 @@ export default class App extends React.Component<IProps, IState> {
     );
   }
 }
-
