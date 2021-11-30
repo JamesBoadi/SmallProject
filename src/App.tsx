@@ -1,6 +1,5 @@
 import React from "react";
 
-
 type Args = { id: string; argument: string };
 type Operation = { id: string; argument: string };
 
@@ -198,7 +197,7 @@ export default class App extends React.Component<IProps, IState> {
     if (this.state.updateResult) {
       const opArr = [...this.state.operationArray];
       const argsArr = [...this.state.boolArgsArray];
-      let res;
+      let res = false;
 
       for (let index = 0; index < localStorage.length; index++) {
         const key = index.toString();
@@ -206,13 +205,13 @@ export default class App extends React.Component<IProps, IState> {
         if (val !== null || val !== undefined) {
           let json = JSON.parse(JSON.stringify(val));
           if (json !== null) {
-            console.log("null " + json);
+          //  console.log("null " + json);
             const id = JSON.parse(json).id;
             const op = JSON.parse(json).value.select;
             const arg = JSON.parse(json).value.text;
 
-            opArr[index] = {id: id, argument: op};
-            argsArr[index] = {id: id, argument: arg};
+            opArr[index] = { id: id, argument: op };
+            argsArr[index] = { id: id, argument: arg };
           }
 
           res = this.evaluateOperation(opArr, argsArr);
@@ -231,7 +230,6 @@ export default class App extends React.Component<IProps, IState> {
       //console.log(this.state.arrayOfOperators)
       this.setState({ selectOptionsArray: this.state.tempSelectOptionsArray });
       //  this.forceUpdate();
-
       this.setState({ updateSelectOptions: false });
     }
   }
@@ -264,14 +262,20 @@ export default class App extends React.Component<IProps, IState> {
   }
 
   evaluateOperation(operation: Operation[], args: Args[]): boolean {
+   /* for (let index = 0; index < operation.length; index++) {
+      const json1 = JSON.parse(JSON.stringify(operation[index])); 
+      const json2 = JSON.parse(JSON.stringify(args[index])); 
+      
+
+
+    }*/
+
     /* const json = JSON.parse(JSON.stringify(operation));
     console.log('-> ' );
     console.log(json.argument);*/
 
-    return true
+    return true;
   }
-
-
 
   setTextValue(e: React.FormEvent<HTMLInputElement>) {
     let text = e.currentTarget.value;
@@ -405,7 +409,6 @@ export default class App extends React.Component<IProps, IState> {
   /* -------------------------- */
   /* ----- For Operations ----- */
   /* -------------------------- */
-
 
   OperationBuilder(e: React.FormEvent<HTMLSelectElement>) {
     const val = e.currentTarget.value;
