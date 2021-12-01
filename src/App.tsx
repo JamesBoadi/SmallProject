@@ -213,7 +213,8 @@ export default class App extends React.Component<IProps, IState> {
     }
 
     if (this.state.updateResult) {
-      const opArr = [...this.state.operationArray];
+      let tempResult = this.state.tempResult;
+      /*const opArr = [...this.state.operationArray];
 
       let res = false;
 
@@ -230,8 +231,8 @@ export default class App extends React.Component<IProps, IState> {
             opArr[index] = { id: id, argument: arg, operation: op };
           }
         }
-      }
-      this.setState({ operationResult: res });
+      }*/
+      this.setState({ operationResult: tempResult });
       this.setState({ updateResult: false });
     }
     if (this.state.updateOperation) {
@@ -277,7 +278,6 @@ export default class App extends React.Component<IProps, IState> {
 
   evaluateOperation(args: Args[], operators: any[]): boolean {
     let stack: string[] = [];
-    console.log("len " + args.length);
     let temp = "";
     args.forEach(async function (item: any) {
       if (item !== null || item !== undefined) {
@@ -294,6 +294,7 @@ export default class App extends React.Component<IProps, IState> {
 
     let res;
     let bool;
+    let not = 0;
     let and = 0;
 
     for (let index = 0; index < operators.length; index++) {
@@ -311,14 +312,13 @@ export default class App extends React.Component<IProps, IState> {
 
           if (bool === "" || bool === undefined) continue;
 
-          and++; // more than one argument
+          not++; // more than one argument
 
           if (bool === "false") bool = "true";
           else if (bool === "true") bool = "false";
         } else if (item === "and") {
           let coeff1 = stack.pop();
           let coeff2 = stack.pop();
-
           if (
             coeff1 === "" ||
             coeff1 === "" ||
@@ -338,7 +338,12 @@ export default class App extends React.Component<IProps, IState> {
           else if (coeff1 === "false" && coeff2 === "false") bool = "false";
         }
         // Additional arguments
-        if (and === 1) {
+        if (not === 1) {
+          if (res === undefined || res === null || res === "") {
+            res = bool;
+            continue;
+          }
+
           if (
             (bool === "false" && res === "true") ||
             (bool === "true" && res === "false")
@@ -347,12 +352,28 @@ export default class App extends React.Component<IProps, IState> {
           else if (bool === "true" && res === "true") res = "true";
           else res = "false";
 
-          and = 0;
+          not = 0;
         } else res = bool === "true" || bool === "false" ? bool : res;
-      }
+      } else if (and === 2) {
+        if (res === undefined || res === null || res === "") {
+          res = bool;
+          continue;
+        }
+
+        if (
+          (bool === "false" && res === "true") ||
+          (bool === "true" && res === "false")
+        )
+          res = "false";
+        else if (bool === "true" && res === "true") res = "true";
+        else res = "false";
+
+        and = 0;
+      } else res = bool === "true" || bool === "false" ? bool : res;
     }
-    console.log("res " + res);
-    return res === "true";
+
+    this.setState({ tempResult: res === "true" });
+    this.setState({ updateResult: true });
   }
 
   setTextValue(e: React.FormEvent<HTMLInputElement>) {
@@ -489,6 +510,8 @@ export default class App extends React.Component<IProps, IState> {
   OperationBuilder(e: React.FormEvent<HTMLSelectElement>) {
     const val = e.currentTarget.value;
     const id = parseInt(e.currentTarget.id, 0);
+    let arr;
+    let id_;
     switch (val) {
       case "arguments":
         this.menuOptions(1, id, val);
@@ -499,8 +522,8 @@ export default class App extends React.Component<IProps, IState> {
         this.MenuInterface(2, id.toString());
         break;
       case "not-operator":
-        let arr = this.state.operationIdArr;
-        let id_ = this.state.operationId + 1;
+        arr = this.state.operationIdArr;
+        id_ = this.state.operationId + 1;
         this.setState({ operationId: id_ });
         arr[this.state.operationId] = id_;
         this.setState({ operationIdArr: arr });
@@ -512,7 +535,7 @@ export default class App extends React.Component<IProps, IState> {
         this.setState({ operationId: id_ });
         arr[this.state.operationId] = id_;
         this.setState({ operationIdArr: arr });
-        this.MenuInterface(3, id_.toString());
+        this.MenuInterface(4, id_.toString());
         break;
     }
   }
@@ -677,7 +700,6 @@ export default class App extends React.Component<IProps, IState> {
 
   createArgumentsMenu(id: number): JSX.Element {
     var arguments_ = JSON.parse(JSON.stringify(this.state.argumentsArr));
-    // console.log(arguments_);
 
     let id_ = id.toString();
     let args = (
@@ -730,6 +752,7 @@ export default class App extends React.Component<IProps, IState> {
           <option value="arguments">Arguments</option>
           <option value="constant">Constant</option>
           <option value="not-operator">Not</option>
+          <option value="and-operator">And</option>
         </select>
       </div>
     );
@@ -746,6 +769,7 @@ export default class App extends React.Component<IProps, IState> {
         <button
           type="button"
           onClick={() => {
+            this.setState({ boolArgsArray: [] });
             let arr = this.state.operationIdArr;
             let id_ = this.state.operationId + 1;
             this.setState({ operationId: id_ });
@@ -771,7 +795,7 @@ export default class App extends React.Component<IProps, IState> {
       found: true,
       value: { text: "undefined", select: "true" }
     };
-    arr = [this.createDefaultMenu(0)];
+    arr = [];
 
     const resetButton = (
       <div style={{ position: "relative", display: "inline-block" }}>
