@@ -184,6 +184,8 @@ export default class App extends React.Component<IProps, IState> {
     if (this.state.appendBoolArgsArray) {
       let boolArgsArray = [...this.state.boolArgsArray];
       let val = localStorage.getItem("op");
+      let boolArgsId_ = localStorage.getItem("id") || "0";
+      let boolArgsId = parseInt(boolArgsId_, 0);
       let res = false;
 
       if (val !== null || val !== undefined) {
@@ -191,11 +193,11 @@ export default class App extends React.Component<IProps, IState> {
         const id = JSON.parse(op_json).id;
         let storage = "";
         let arg = "";
-        if (id !== "") {
+        if (id !== "" && (id !== undefined || id !== null)) {
           storage = JSON.parse(JSON.stringify(localStorage.getItem(id)));
           arg = JSON.parse(storage).value.text;
           const op = JSON.parse(op_json).argument;
-          boolArgsArray[id] = { operator: op, argument: arg };
+          boolArgsArray[boolArgsId] = { operator: op, argument: arg };
         }
 
         this.setState({ boolArgsArray: boolArgsArray });
@@ -270,22 +272,23 @@ export default class App extends React.Component<IProps, IState> {
   }
 
   evaluateOperation(args: Args[], operators: any[]): boolean {
-    let not_operator = 0;
     var stack: string[] = [];
-    let true_arg = 0;
-    let false_arg = 0;
-
+    console.log(args);
     const iterateArgs = (item: any) => {
       if (item !== null || item !== undefined) {
-        const json = JSON.parse(JSON.stringify(item));
-        let bool = json.operator;
-        if (bool === "true") stack.push("true");
-        if (bool === "false") stack.push("false");
+        if(typeof item === "string")
+        {
+          const json = JSON.parse(JSON.stringify(item));
+          let bool = json.operator;
+          if (bool === "true") stack.push("true");
+          if (bool === "false") stack.push("false");
+        }
       }
     };
 
     args.forEach(iterateArgs);
     stack.reverse();
+
     let res = "";
     let iterateOperations = (item: any) => {
       let bool = "";
@@ -304,15 +307,17 @@ export default class App extends React.Component<IProps, IState> {
           else bool = "false";
         }
 
-        
+        if(res === "")
+          res = bool;
+        else if ((bool === "false" && res === "true")
+        || (bool === "true" && res === "false")) res = "false";
+        else if (bool === "true" && res === "true") res = "true";
+        else res = "false";
       }
     };
 
     operators.forEach(iterateOperations);
-
-    //console.log("->"+true_arg + ' ' + false_arg);
-
-    return true;
+    return (res === "true");
   }
 
   setTextValue(e: React.FormEvent<HTMLInputElement>) {
@@ -534,6 +539,8 @@ export default class App extends React.Component<IProps, IState> {
 
     if (id === 0) storeOperators[2] = undefined;
 
+    localStorage.setItem("id", id.toString());
+
     const result = JSON.parse(e.currentTarget.value);
     const val = JSON.parse(result).value.select;
     const argsId = JSON.parse(result).id;
@@ -542,7 +549,7 @@ export default class App extends React.Component<IProps, IState> {
       id: argsId,
       argument: val
     };
-    const val_ = !localStorage.getItem("op");
+    const val_ = localStorage.getItem("op");
 
     if (val_ !== null || val_ !== undefined)
       localStorage.setItem("op", JSON.stringify(res));
