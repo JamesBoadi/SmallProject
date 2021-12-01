@@ -273,15 +273,18 @@ export default class App extends React.Component<IProps, IState> {
 
   evaluateOperation(args: Args[], operators: any[]): boolean {
     var stack: string[] = [];
-    console.log(args);
+ 
     const iterateArgs = (item: any) => {
       if (item !== null || item !== undefined) {
-        if(typeof item === "string")
+        if(typeof item === "object")
         {
           const json = JSON.parse(JSON.stringify(item));
-          let bool = json.operator;
+          let bool = json.operator.toString();
           if (bool === "true") stack.push("true");
           if (bool === "false") stack.push("false");
+
+          console.log(stack)
+
         }
       }
     };
@@ -289,6 +292,7 @@ export default class App extends React.Component<IProps, IState> {
     args.forEach(iterateArgs);
     stack.reverse();
 
+  
     let res = "";
     let iterateOperations = (item: any) => {
       let bool = "";
@@ -297,6 +301,8 @@ export default class App extends React.Component<IProps, IState> {
           if (stack.length !== 0) bool = stack.pop() || "";
           if (bool === "false") bool = "true";
           else if (bool === "true") bool = "false";
+
+       //  console.log("bool " + bool);
         } else if (item === "and") {
           let coeff1 = stack.pop() || "";
           let coeff2 = stack.pop() || "";
@@ -316,6 +322,7 @@ export default class App extends React.Component<IProps, IState> {
       }
     };
 
+ console.log("res " + res)
     operators.forEach(iterateOperations);
     return (res === "true");
   }
