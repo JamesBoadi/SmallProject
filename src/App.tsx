@@ -348,7 +348,8 @@ export default class App extends React.Component<IProps, IState> {
             operators[operators.length - 1] = op;
             operators[index] = operators[operators.length - 1];
             operators[operators.length - 1] = op;
-
+            
+            pointer = 0;
             counter++;
           }
 
@@ -1016,4 +1017,3 @@ export default class App extends React.Component<IProps, IState> {
     );
   }
 }
-
