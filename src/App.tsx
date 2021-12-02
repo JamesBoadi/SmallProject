@@ -47,8 +47,8 @@ interface IState {
   hideMenu: boolean;
 
   updateResult: boolean;
-  tempResult: boolean;
-  operationResult: boolean;
+  tempResult: any;
+  operationResult: any;
   currentOperation: any;
 }
 
@@ -171,13 +171,7 @@ export default class App extends React.Component<IProps, IState> {
       this.setState({ elements: elements_ });
       this.setState({ appendElement: false });
     }
-    if (this.state.updateMenu) {
-      let arr = this.state.tempMenu;
-      this.setState({ menu: arr });
-      this.setState({ updateMenu: false });
-    }
     if (this.state.updateArguments) {
-      // When arguments is selected from list
       this.storeArguments();
       this.setState({ updateArguments: !this.state.updateArguments });
     }
@@ -206,14 +200,14 @@ export default class App extends React.Component<IProps, IState> {
 
         this.setState({ boolArgsArray: boolArgsArray });
         res = this.evaluateOperation(boolArgsArray, storeOperators);
-        //console.log(boolArgsArray[id]);
+        console.log("RES " + res);
+        this.setState({ tempResult: res !== undefined ? res : undefined });
       }
-      this.setState({ operationResult: res });
+
       this.setState({ appendBoolArgsArray: false });
     }
 
     if (this.state.updateResult) {
-      let tempResult = this.state.tempResult;
       /*const opArr = [...this.state.operationArray];
 
       let res = false;
@@ -232,7 +226,7 @@ export default class App extends React.Component<IProps, IState> {
           }
         }
       }*/
-      this.setState({ operationResult: tempResult });
+
       this.setState({ updateResult: false });
     }
     if (this.state.updateOperation) {
@@ -242,9 +236,7 @@ export default class App extends React.Component<IProps, IState> {
       this.setState({ updateOperation: false });
     }
     if (this.state.updateSelectOptions) {
-      //console.log(this.state.arrayOfOperators)
       this.setState({ selectOptionsArray: this.state.tempSelectOptionsArray });
-      //  this.forceUpdate();
       this.setState({ updateSelectOptions: false });
     }
   }
@@ -262,6 +254,7 @@ export default class App extends React.Component<IProps, IState> {
       this.state.updateResult !== nextState.updateResult ||
       this.state.currentOperation !== nextState.currentOperation ||
       this.state.tempResult !== nextState.tempResult ||
+      this.state.operationResult !== nextState.operationResult ||
       this.state.operationId !== nextState.operationId ||
       this.state.operationIdArr.length !== nextState.operationIdArr.length ||
       this.state.updateOperation !== nextState.updateOperation ||
@@ -279,7 +272,7 @@ export default class App extends React.Component<IProps, IState> {
   evaluateOperation(args: Args[], operators: any[]): boolean {
     let stack: string[] = [];
     let temp = "";
-    args.forEach(async function (item: any) {
+    args.forEach( function (item: any) {
       if (item !== null || item !== undefined) {
         if (typeof item === "object") {
           const json = JSON.parse(JSON.stringify(item));
@@ -293,87 +286,92 @@ export default class App extends React.Component<IProps, IState> {
     });
 
     let res;
-    let bool;
-    let not = 0;
-    let and = 0;
+    let pointer = 0;
+    let noArgs = 0;
+    let tempArr = [];
+   // res = this.state.tempResult;
+    for (let counter = 0; counter <= stack.length - 1; counter++) {
+      let bool = stack[counter];
+   
 
-    for (let index = 0; index < operators.length; index++) {
-      if (stack.length === 0) {
-        res = bool;
-        break;
-      }
+      if (pointer === 2) pointer = 0;
+      if (bool === null || bool === undefined || bool === "") continue;
+      tempArr.push(bool);
+      pointer++;
 
-      let item = operators[index];
+      if (pointer >= 1)
+        for (let index = 0; index < operators.length; index++) {
+          let op = operators[index];
+         
+          
+          if (op === "not" && pointer === 1) {
+            let temp = tempArr.pop();
+            if (temp === "false") bool = "true";
+            else if (temp === "true") bool = "false";
 
-      if (item !== null || item !== undefined) {
-        if (item === "not") {
-          bool = stack.pop();
-          bool = bool?.toString();
+            console.log("not ");  
+            pointer = 0;
+            noArgs++;
 
-          if (bool === "" || bool === undefined) continue;
+            // swap
+            operators[index] = operators[operators.length - 1];
+            operators[operators.length - 1] = op;
 
-          not++; // more than one argument
+            counter++;
+          } else if (op === "and" && pointer === 2) {
+            let coeff1 = tempArr[0];
+            if (coeff1 === "" || coeff1 === undefined) {
+              pointer = 0; // No swap
+              noArgs++;
+              counter++;
+             
+            }
 
-          if (bool === "false") bool = "true";
-          else if (bool === "true") bool = "false";
-        } else if (item === "and") {
-          let coeff1 = stack.pop();
-          let coeff2 = stack.pop();
-          if (
-            coeff1 === "" ||
-            coeff1 === "" ||
-            coeff1 === undefined ||
-            coeff2 === undefined
-          )
-            continue;
+            let coeff2 = tempArr[1];
+            if (coeff2 === undefined || coeff2 === "") {
+              pointer = 0; // No swap
+              noArgs++;
+              counter++;
+          
+            }
+            console.log("and");
+            if (
+              (coeff1 === "false" && coeff2 === "true") ||
+              (coeff1 === "true" && coeff2 === "false")
+            )
+              bool = "false";
+            else if (coeff1 === "true" && coeff2 === "true") bool = "true";
+            else if (coeff1 === "false" && coeff2 === "false") bool = "false";
 
-          and++; // more than one argument
+            // swap
+            operators[index] = operators[operators.length - 1];
+            operators[operators.length - 1] = op;
+            operators[index] = operators[operators.length - 1];
+            operators[operators.length - 1] = op;
 
-          if (
-            (coeff1 === "false" && coeff2 === "true") ||
-            (coeff1 === "true" && coeff2 === "false")
-          )
-            bool = "false";
-          else if (coeff1 === "true" && coeff2 === "true") bool = "true";
-          else if (coeff1 === "false" && coeff2 === "false") bool = "false";
-        }
-        // Additional arguments
-        if (not === 1) {
-          if (res === undefined || res === null || res === "") {
-            res = bool;
-            continue;
+            counter++;
           }
 
-          if (
-            (bool === "false" && res === "true") ||
-            (bool === "true" && res === "false")
-          )
-            res = "false";
-          else if (bool === "true" && res === "true") res = "true";
-          else res = "false";
-
-          not = 0;
-        } else res = bool === "true" || bool === "false" ? bool : res;
-      } else if (and === 2) {
-        if (res === undefined || res === null || res === "") {
-          res = bool;
-          continue;
+          operators[index] = operators[operators.length - 1];
+          operators[operators.length - 1] = op;
+          //replace with splice
         }
 
+      // AND
+      if (noArgs > 1) {
         if (
           (bool === "false" && res === "true") ||
           (bool === "true" && res === "false")
         )
           res = "false";
         else if (bool === "true" && res === "true") res = "true";
-        else res = "false";
+        else if (bool === "false" && res === "false") res = "false";
+      } else res = bool;
 
-        and = 0;
-      } else res = bool === "true" || bool === "false" ? bool : res;
+      bool = "";
     }
 
-    this.setState({ tempResult: res === "true" });
-    this.setState({ updateResult: true });
+    return res === "true";
   }
 
   setTextValue(e: React.FormEvent<HTMLInputElement>) {
@@ -488,7 +486,6 @@ export default class App extends React.Component<IProps, IState> {
     this.setState({ updateArguments: !this.state.updateArguments });
   }
 
-  // Call this function every time myArg or an operator is selected
   ArgumentsBuilder(key: number): JSX.Element[] {
     // Render a new element based on what was selected
     switch (key) {
@@ -654,7 +651,7 @@ export default class App extends React.Component<IProps, IState> {
   /* ----------------------------- */
   /* ----- Menu JSX Elements ----- */
   /* ----------------------------- */
-  // Call every time a default menu is created
+  // Call every time a menu is created
   menuOptions(key: number, id: number, val: string) {
     let tempArr = [...this.state.tempOperatorArr];
     let defaultMenu = this.createDefaultMenu(id);
@@ -789,12 +786,6 @@ export default class App extends React.Component<IProps, IState> {
   resetButton(): JSX.Element {
     let arr = [...this.state.tempOperatorArr];
     arr = [];
-
-    let newRes = {
-      id: "0",
-      found: true,
-      value: { text: "undefined", select: "true" }
-    };
     arr = [];
 
     const resetButton = (
@@ -802,10 +793,10 @@ export default class App extends React.Component<IProps, IState> {
         <button
           type="button"
           onClick={() => {
+            this.setState({ boolArgsArray: [] });
             this.setState({ operationId: 1 });
             this.setState({ tempOperatorArr: arr });
             this.setState({ updateOperation: true });
-            // this.menuOptions(0, 0, "");
           }}
         >
           Reset
@@ -962,6 +953,10 @@ export default class App extends React.Component<IProps, IState> {
   render() {
     return (
       <div>
+
+        <p>Logic Evaluator, can intepret postfix, infix, or prefix,
+          depending on the order
+        </p>
         {/* todo: use <OperationBuilder> and have an interface
             for entering arguments and seeing the result */}
         <div id={"0"} style={{ float: "left", height: "70" }}>
@@ -1014,10 +1009,11 @@ export default class App extends React.Component<IProps, IState> {
 
           <div style={{ position: "relative", transform: "translateY(50px)" }}>
             Result:
-            {"   " + this.state.operationResult}
+            {"   " + this.state.tempResult}
           </div>
         </div>
       </div>
     );
   }
 }
+
